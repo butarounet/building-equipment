@@ -7,6 +7,13 @@ const ZONES = [
   { name: '商業地域（指定容積率600%・高度利用地区）', maxBuildingCoverageRatio: 0.8, maxFloorAreaRatio: 6.0 }
 ];
 const STRUCTURES = ['鉄骨鉄筋コンクリート造、一部鉄骨造', '鉄骨造、一部鉄筋コンクリート造', '鉄筋コンクリート造、一部鉄骨造'];
+const HOTEL_TYPE_USES = {
+  '都市型シティホテル': '宿泊施設（都市型シティホテル）',
+  '国際会議対応ホテル': '宿泊施設（国際会議対応ホテル）',
+  '宴会場併設ホテル': '宿泊施設（宴会場併設ホテル）',
+  '温浴施設付きホテル': '宿泊施設（温浴施設付きホテル）',
+  '宿泊主体型ホテル': '宿泊施設（宿泊主体型ホテル）'
+};
 
 function randomInt(min, max, random = Math.random) {
   return Math.floor(random() * (max - min + 1)) + min;
@@ -24,28 +31,45 @@ function area(value) {
   return { value, unit: 'm2' };
 }
 
+function numberInPolicy(policy, fallbackMin, fallbackMax, random, integer = true) {
+  const min = Number.isFinite(policy?.min) ? policy.min : fallbackMin;
+  const max = Number.isFinite(policy?.max) ? policy.max : fallbackMax;
+  return integer ? randomInt(Math.ceil(min), Math.floor(max), random) : min + (max - min) * random();
+}
+
+function ratioInPolicy(policy, fallbackMin, fallbackMax, random) {
+  return numberInPolicy(policy, fallbackMin, fallbackMax, random, false);
+}
+
 function generateBuilding(options = {}) {
   const random = options.random || Math.random;
+  const plan = options.plan || null;
   const zone = pick(ZONES, random);
-  const aboveGround = randomInt(8, 12, random);
-  const basement = random() < 0.82 ? 1 : 2;
-  const penthouse = 1;
-  const siteAreaValue = roundTo(randomInt(4200, 6500, random), 10);
-  const targetCoverage = Math.min(zone.maxBuildingCoverageRatio - 0.12, randomInt(52, 64, random) / 100);
+  const aboveGround = numberInPolicy(plan?.floorPolicy?.aboveGround, 8, 12, random);
+  const basement = plan ? numberInPolicy(plan.floorPolicy?.basement, 1, 2, random) : (random() < 0.82 ? 1 : 2);
+  const penthouse = plan?.floorPolicy?.penthouse || 1;
+  const siteAreaValue = roundTo(numberInPolicy(plan?.siteCondition?.siteArea, 4200, 6500, random), 10);
+  const coveragePolicy = plan?.scalePolicy?.buildingCoverageRatioTarget;
+  const targetCoverage = Math.min(zone.maxBuildingCoverageRatio - 0.08, plan ? ratioInPolicy(coveragePolicy, 0.52, 0.64, random) : randomInt(52, 64, random) / 100);
   const buildingAreaValue = roundTo(siteAreaValue * targetCoverage, 10);
   const averageUpperFloor = buildingAreaValue * (randomInt(70, 82, random) / 100);
   const basementArea = buildingAreaValue * basement * (randomInt(72, 88, random) / 100);
   let totalFloorAreaValue = roundTo(buildingAreaValue + averageUpperFloor * (aboveGround - 1) + basementArea + 120, 10);
   totalFloorAreaValue = Math.min(totalFloorAreaValue, roundTo(siteAreaValue * zone.maxFloorAreaRatio * 0.96, 10));
-  const rooms = Math.max(140, Math.min(430, Math.round(totalFloorAreaValue / randomInt(78, 92, random))));
-  const banquetArea = roundTo(totalFloorAreaValue * (randomInt(6, 8, random) / 100), 10);
-  const restaurantArea = roundTo(totalFloorAreaValue * (randomInt(4, 6, random) / 100), 10);
+  let rooms = plan ? numberInPolicy(plan.guestRoomPolicy?.guestRooms, 140, 430, random) : Math.max(140, Math.min(430, Math.round(totalFloorAreaValue / randomInt(78, 92, random))));
+  rooms = Math.max(120, Math.min(430, rooms));
+  if (plan) rooms = Math.max(rooms, Math.min(430, Math.ceil(totalFloorAreaValue / 105)));
+  const banquetArea = roundTo(totalFloorAreaValue * (plan ? ratioInPolicy(plan.banquetPolicy?.areaRatio, 0.06, 0.08, random) : randomInt(6, 8, random) / 100), 10);
+  const restaurantArea = roundTo(totalFloorAreaValue * (plan ? ratioInPolicy(plan.restaurantPolicy?.areaRatio, 0.04, 0.06, random) : randomInt(4, 6, random) / 100), 10);
+  const restaurantCountPolicy = plan?.restaurantPolicy?.count;
+  const restaurantCount = Array.isArray(restaurantCountPolicy) ? randomInt(restaurantCountPolicy[0], restaurantCountPolicy[1], random) : randomInt(1, 2, random);
   const kitchenArea = roundTo((banquetArea + restaurantArea) * (randomInt(32, 42, random) / 100), 10);
-  const spaArea = roundTo(totalFloorAreaValue * (randomInt(16, 24, random) / 1000), 10);
+  const spaArea = roundTo(totalFloorAreaValue * (plan ? ratioInPolicy(plan.spaPolicy?.areaRatio, 0.016, 0.024, random) : randomInt(16, 24, random) / 1000), 10);
   const laundryArea = roundTo(rooms * randomInt(8, 12, random) / 10, 10);
-  const mechanicalRoomArea = roundTo(totalFloorAreaValue * (basement >= 1 ? randomInt(42, 55, random) / 1000 : randomInt(55, 65, random) / 1000), 10);
-  const electricalRoomArea = roundTo(totalFloorAreaValue * randomInt(12, 18, random) / 1000, 10);
-  const transformerRoomArea = roundTo(totalFloorAreaValue * randomInt(10, 15, random) / 1000, 10);
+  const equipmentRatio = plan ? ratioInPolicy(plan.equipmentSpacePolicy?.areaRatio, 0.07, 0.085, random) : null;
+  const mechanicalRoomArea = roundTo(totalFloorAreaValue * (equipmentRatio ? equipmentRatio * 0.56 : (basement >= 1 ? randomInt(42, 55, random) / 1000 : randomInt(55, 65, random) / 1000)), 10);
+  const electricalRoomArea = roundTo(totalFloorAreaValue * (equipmentRatio ? equipmentRatio * 0.18 : randomInt(12, 18, random) / 1000), 10);
+  const transformerRoomArea = roundTo(totalFloorAreaValue * (equipmentRatio ? equipmentRatio * 0.16 : randomInt(10, 15, random) / 1000), 10);
   const epsArea = roundTo(aboveGround * randomInt(8, 12, random), 1);
   const psArea = roundTo(aboveGround * randomInt(10, 15, random), 1);
   const dsArea = roundTo(aboveGround * randomInt(7, 11, random), 1);
@@ -55,11 +79,11 @@ function generateBuilding(options = {}) {
     schemaVersion: '1.0.0',
     buildingType: 'hotel',
     building: {
-      name: pick(HOTEL_NAMES, random),
-      concept: pick(CONCEPTS, random),
-      use: '宿泊施設（シティホテル）',
+      name: plan ? `${plan.hotelType}計画` : pick(HOTEL_NAMES, random),
+      concept: plan?.designTheme || pick(CONCEPTS, random),
+      use: plan ? (HOTEL_TYPE_USES[plan.hotelType] || `宿泊施設（${plan.hotelType}）`) : '宿泊施設（シティホテル）',
       location: pick(LOCATIONS, random),
-      siteCondition: '前面道路幅員12m以上、サービス動線と歩行者動線を分離可能な整形敷地',
+      siteCondition: plan?.siteCondition?.access || '前面道路幅員12m以上、サービス動線と歩行者動線を分離可能な整形敷地',
       zoning: zone.name,
       siteArea: area(siteAreaValue),
       buildingArea: area(buildingAreaValue),
@@ -69,7 +93,7 @@ function generateBuilding(options = {}) {
       rooms: {
         guestRooms: rooms,
         banquetHall: { count: 1, area: area(banquetArea) },
-        restaurant: { count: randomInt(1, 2, random), area: area(restaurantArea) },
+        restaurant: { count: restaurantCount, area: area(restaurantArea) },
         kitchen: { area: area(kitchenArea) },
         spa: { area: area(spaArea) },
         laundry: { area: area(laundryArea) }
@@ -89,6 +113,7 @@ function generateBuilding(options = {}) {
         totalDesignPopulation: rooms * 2 + Math.round(rooms * 0.28) + Math.round(banquetArea / 2),
         unit: 'persons'
       },
+      planningSource: plan ? { hotelType: plan.hotelType, examDifficulty: plan.examDifficulty, zoningPolicy: plan.zoningPolicy } : undefined,
       legal: {
         buildingCoverageRatio: Number((buildingAreaValue / siteAreaValue).toFixed(3)),
         floorAreaRatio: Number((totalFloorAreaValue / siteAreaValue).toFixed(3)),
@@ -120,7 +145,7 @@ function validateBuilding(buildingJson) {
     legalCompliance: footprint > 0 && site > 0 && footprint / site <= (legal.maxBuildingCoverageRatio || 1) && total / site <= (legal.maxFloorAreaRatio || 10),
     equipmentPlanning: Boolean(equipment.mechanicalRoom && equipment.electricalRoom && equipment.transformerRoom && equipment.EPS && equipment.PS && equipment.DS),
     guestRoomCapacity: total > 0 && guestRooms >= 120 && guestRooms <= 430 && total / guestRooms >= 65 && total / guestRooms <= 110,
-    floorPlanning: floors.aboveGround >= 8 && floors.aboveGround <= 12 && floors.basement >= 1 && floors.penthouse >= 1,
+    floorPlanning: floors.aboveGround >= 8 && floors.aboveGround <= (b.planningSource ? 14 : 12) && floors.basement >= 1 && floors.penthouse >= 1,
     equipmentSpace: total > 0 && equipmentArea / total >= 0.065,
     basementMechanicalConsistency: floors.basement >= 1 && equipment.mechanicalRoom?.primaryLocation?.includes('地下')
   };
