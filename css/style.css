@@ -214,22 +214,46 @@ h2 {
   color: var(--color-muted);
 }
 
-.generate-button {
+.generator-actions {
+  display: flex;
   flex: 0 0 auto;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.generate-button,
+.json-toggle-button {
   padding: 12px 22px;
-  color: #ffffff;
   font: inherit;
   font-weight: 700;
   cursor: pointer;
+  border-radius: 999px;
+}
+
+.generate-button {
+  color: #ffffff;
   background: var(--color-accent);
   border: 0;
-  border-radius: 999px;
   box-shadow: 0 10px 24px rgba(15, 118, 110, 0.22);
+}
+
+.json-toggle-button {
+  color: var(--color-accent-dark);
+  background: #ffffff;
+  border: 1px solid var(--color-accent);
 }
 
 .generate-button:hover,
 .generate-button:focus-visible {
   background: var(--color-accent-dark);
+  outline: none;
+}
+
+.json-toggle-button:hover,
+.json-toggle-button:focus-visible {
+  color: #ffffff;
+  background: var(--color-accent);
   outline: none;
 }
 
@@ -290,6 +314,32 @@ h2 {
   font-weight: 700;
 }
 
+.json-preview {
+  margin-top: 24px;
+}
+
+.json-preview h3 {
+  margin: 0 0 12px;
+  color: var(--color-accent-dark);
+  font-size: 1.15rem;
+}
+
+.json-preview__code {
+  max-width: 100%;
+  max-height: 520px;
+  margin: 0;
+  padding: 20px;
+  overflow-x: auto;
+  color: #dbeafe;
+  font-family: Consolas, Monaco, "Courier New", monospace;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  white-space: pre;
+  background: #0f172a;
+  border: 1px solid #1e293b;
+  border-radius: 18px;
+}
+
 @media (max-width: 720px) {
   .site-header__inner,
   .page-shell,
@@ -342,7 +392,13 @@ h2 {
     flex-direction: column;
   }
 
-  .generate-button {
+  .generator-actions {
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .generate-button,
+  .json-toggle-button {
     width: 100%;
     justify-content: center;
   }
@@ -402,6 +458,24 @@ h2 {
   .generation-result {
     grid-template-columns: 1fr;
     gap: 6mm;
+  }
+
+  .json-preview {
+    break-inside: avoid;
+    margin-top: 6mm;
+  }
+
+  .json-preview__code {
+    max-height: none;
+    padding: 4mm;
+    overflow: visible;
+    color: #000000;
+    font-size: 8pt;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    background: #ffffff;
+    border: 1px solid #000000;
+    border-radius: 0;
   }
 
   .result-card {

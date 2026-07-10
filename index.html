@@ -67,10 +67,17 @@
           <h2>Generator Preview</h2>
           <p>Building GeneratorとEquipment Generatorを順番に実行し、生成された模擬試験条件をブラウザで確認できます。</p>
         </div>
-        <button class="generate-button no-print" type="button" id="generate-button">模擬試験生成</button>
+        <div class="generator-actions no-print">
+          <button class="generate-button" type="button" id="generate-button">模擬試験生成</button>
+          <button class="json-toggle-button" type="button" id="json-toggle-button">JSONを表示</button>
+        </div>
       </div>
       <div class="generation-result" id="generation-result" aria-live="polite">
         <p class="generation-result__empty">「模擬試験生成」ボタンを押すと、建築条件と設備条件がカード形式で表示されます。</p>
+      </div>
+      <div class="json-preview" aria-labelledby="json-preview-heading">
+        <h3 id="json-preview-heading">生成JSON</h3>
+        <pre class="json-preview__code" id="json-preview-code" aria-live="polite"><code>「JSONを表示」ボタンを押すと、生成済みの建築条件と設備条件をJSON形式で確認できます。</code></pre>
       </div>
     </section>
 

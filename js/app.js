@@ -3,7 +3,11 @@ document.addEventListener('DOMContentLoaded', () => {
   const menuList = document.querySelector('#menu-list');
   const printButton = document.querySelector('#print-button');
   const generateButton = document.querySelector('#generate-button');
+  const jsonToggleButton = document.querySelector('#json-toggle-button');
   const resultArea = document.querySelector('#generation-result');
+  const jsonPreviewCode = document.querySelector('#json-preview-code code');
+  let generatedBuilding = null;
+  let generatedEquipment = null;
 
   const formatArea = (area) => {
     if (!area || typeof area.value === 'undefined') return '-';
@@ -88,9 +92,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (generateButton && resultArea) {
     generateButton.addEventListener('click', () => {
-      const building = generateBuilding();
-      const equipment = generateEquipment(building);
-      renderGenerationResult(building, equipment);
+      generatedBuilding = generateBuilding();
+      generatedEquipment = generateEquipment(generatedBuilding);
+      renderGenerationResult(generatedBuilding, generatedEquipment);
+    });
+  }
+
+  if (jsonToggleButton && jsonPreviewCode) {
+    jsonToggleButton.addEventListener('click', () => {
+      if (!generatedBuilding || !generatedEquipment) {
+        jsonPreviewCode.textContent = '先に模擬試験生成を押してください';
+        return;
+      }
+
+      jsonPreviewCode.textContent = JSON.stringify({
+        building: generatedBuilding,
+        equipment: generatedEquipment
+      }, null, 2);
     });
   }
 });
