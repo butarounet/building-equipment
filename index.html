@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="建築設備士 第二次試験（設計製図）の模擬試験Webアプリです。">
+  <title>建築設備士 第二次試験 模擬試験</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="site-header__inner">
+      <p class="site-header__eyebrow">設計製図 対策Webアプリ</p>
+      <h1>建築設備士 第二次試験 模擬試験</h1>
+      <p class="site-header__lead">課題文、計画条件、解答用紙を整理し、A4印刷にも対応した学習用テンプレートです。</p>
+    </div>
+  </header>
+
+  <nav class="global-menu" aria-label="メインメニュー">
+    <button class="global-menu__toggle" type="button" aria-expanded="false" aria-controls="menu-list">
+      メニュー
+    </button>
+    <ul class="global-menu__list" id="menu-list">
+      <li><a href="#overview">概要</a></li>
+      <li><a href="#conditions">計画条件</a></li>
+      <li><a href="#answer-sheet">解答用紙</a></li>
+      <li><a href="#print">印刷</a></li>
+    </ul>
+  </nav>
+
+  <main class="page-shell">
+    <section class="card" id="overview">
+      <h2>模擬試験の概要</h2>
+      <p>建築設備士第二次試験（設計製図）を想定し、設備計画の条件整理から記述・図面作成までを段階的に進めるための土台です。</p>
+      <div class="status-grid" aria-label="試験情報">
+        <div>
+          <span class="status-grid__label">想定時間</span>
+          <strong>180分</strong>
+        </div>
+        <div>
+          <span class="status-grid__label">用紙</span>
+          <strong>A4印刷対応</strong>
+        </div>
+        <div>
+          <span class="status-grid__label">形式</span>
+          <strong>HTML / CSS / JavaScript</strong>
+        </div>
+      </div>
+    </section>
+
+    <section class="card" id="conditions">
+      <h2>計画条件</h2>
+      <p>今後、課題データをdataディレクトリに追加し、用途・延床面積・設備条件などを表示できるように拡張します。</p>
+      <ul class="check-list">
+        <li>建築概要</li>
+        <li>空気調和設備</li>
+        <li>給排水衛生設備</li>
+        <li>電気設備</li>
+      </ul>
+    </section>
+
+    <section class="card answer-sheet" id="answer-sheet">
+      <h2>解答用紙</h2>
+      <p>記述欄や図面欄を配置するための印刷領域です。ブラウザの印刷機能でA4縦に出力できます。</p>
+      <div class="sheet-preview" aria-label="A4解答用紙プレビュー">
+        <div class="sheet-preview__header">A4 解答用紙</div>
+        <div class="sheet-preview__line"></div>
+        <div class="sheet-preview__line"></div>
+        <div class="sheet-preview__line sheet-preview__line--wide"></div>
+      </div>
+    </section>
+
+    <section class="card no-print" id="print">
+      <h2>印刷</h2>
+      <p>印刷時はメニューや操作ボタンを非表示にし、白背景のA4レイアウトに最適化します。</p>
+      <button class="print-button" type="button" id="print-button">A4で印刷する</button>
+    </section>
+  </main>
+
+  <footer class="site-footer no-print">
+    <small>&copy; 2026 建築設備士 第二次試験 模擬試験</small>
+  </footer>
+
+  <script src="js/app.js" defer></script>
+</body>
+</html>
