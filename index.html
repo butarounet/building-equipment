@@ -23,6 +23,7 @@
     <ul class="global-menu__list" id="menu-list">
       <li><a href="#overview">概要</a></li>
       <li><a href="#conditions">計画条件</a></li>
+      <li><a href="#generator-preview">生成プレビュー</a></li>
       <li><a href="#answer-sheet">解答用紙</a></li>
       <li><a href="#print">印刷</a></li>
     </ul>
@@ -59,6 +60,20 @@
       </ul>
     </section>
 
+
+    <section class="card generator-preview" id="generator-preview">
+      <div class="section-heading">
+        <div>
+          <h2>Generator Preview</h2>
+          <p>Building GeneratorとEquipment Generatorを順番に実行し、生成された模擬試験条件をブラウザで確認できます。</p>
+        </div>
+        <button class="generate-button no-print" type="button" id="generate-button">模擬試験生成</button>
+      </div>
+      <div class="generation-result" id="generation-result" aria-live="polite">
+        <p class="generation-result__empty">「模擬試験生成」ボタンを押すと、建築条件と設備条件がカード形式で表示されます。</p>
+      </div>
+    </section>
+
     <section class="card answer-sheet" id="answer-sheet">
       <h2>解答用紙</h2>
       <p>記述欄や図面欄を配置するための印刷領域です。ブラウザの印刷機能でA4縦に出力できます。</p>
@@ -81,6 +96,8 @@
     <small>&copy; 2026 建築設備士 第二次試験 模擬試験</small>
   </footer>
 
+  <script src="js/generator/buildingGenerator.js" defer></script>
+  <script src="js/generator/equipmentGenerator.js" defer></script>
   <script src="js/app.js" defer></script>
 </body>
 </html>
