@@ -12,7 +12,8 @@
 ├── js/
 │   ├── app.js
 │   └── generator/
-│       └── buildingGenerator.js
+│       ├── buildingGenerator.js
+│       └── equipmentGenerator.js
 ├── svg/
 ├── data/
 │   └── hotel/
@@ -38,6 +39,7 @@
 - CSSとJavaScriptの分離
 - 用途別JSONデータによる模擬試験生成基盤
 - ホテル用途の建築条件を自動生成するBuilding Generator
+- 建築条件からホテル用途の設備条件を自動生成するEquipment Generator
 - 生成条件を検査するQuality Checker
 
 ## データモデル
@@ -92,9 +94,45 @@ Quality Checkerとして、生成後の建築条件を検査します。
 
 戻り値は `{ isValid, errors, warnings, checks }` です。
 
+## Equipment Generator
+
+`js/generator/equipmentGenerator.js` は、Building Generatorが生成したホテル用途の建築条件を入力として、`equipment.json` 互換の設備条件オブジェクトを生成します。
+
+```js
+const { generateBuilding } = require('./js/generator/buildingGenerator');
+const { generateEquipment, validateEquipment } = require('./js/generator/equipmentGenerator');
+
+const building = generateBuilding();
+const equipment = generateEquipment(building);
+const result = validateEquipment(equipment, building);
+```
+
+### generateEquipment(building)
+
+以下の設備分野を、延床面積、客室数、利用人数、主要室、設備スペースに応じて生成します。
+
+- 空調設備、換気設備
+- 給水設備、給湯設備、排水設備、消火設備
+- 電気設備、受変電設備、非常電源設備、照明設備
+- 搬送設備、中央監視設備
+
+客室数に応じて中央熱源方式、客室空調方式、受変電容量、非常用発電機容量、エレベーター台数を調整します。厨房がある場合は厨房給排気バランス換気方式、SPAがある場合はSPA高負荷対応の中央給湯循環方式、宴会場がある場合は宴会場単独空調ゾーンを追加します。
+
+### validateEquipment(equipment, building)
+
+Quality Checkerとして、生成後の設備条件を検査します。
+
+- 設備方式の成立性
+- 建物規模と客室数との整合
+- 熱源、給湯、受変電、搬送などの設備容量
+- 機械室、電気室、受変電室、EPS、PS、DSとの整合
+- 厨房換気、SPA給湯、宴会場空調ゾーンなどの設備条件不足
+
+戻り値は `{ isValid, errors, warnings, checks }` です。
+
 ## ドメインモデルとの整合
 
-Building Generatorは `docs/DOMAIN_MODEL.md` の「建物」エンティティを起点として、階数、主要室、設備スペースを生成します。生成結果は後続のEquipment Generator、Drawing Generator、Exam Generator、Scoring Generator、およびQuality Checkerが参照する前提条件として利用できる構造です。
+Building Generatorは `docs/DOMAIN_MODEL.md` の「建物」エンティティを起点として、階数、主要室、設備スペースを生成します。Equipment Generatorは同モデルの「設備機器」「空調設備」「衛生設備」「電気設備」を、建物全体・室・設備スペースに紐づく設備方式、容量、設置場所として生成します。生成結果は後続のDrawing Generator、Exam Generator、Scoring Generator、およびQuality Checkerが参照する前提条件として利用できる構造です。
 
 ## テスト
 

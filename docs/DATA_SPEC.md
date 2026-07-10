@@ -25,7 +25,7 @@ data/
 - building.json: 建物名称、用途、所在地、敷地面積、延床面積、階数、構造、利用人数などの建築条件。
 - floors.json: 地下階、地上階、塔屋などの階構成、面積、主要用途、ゾーン。
 - rooms.json: 各階の室名、室用途、室面積、ゾーン、設備要求、温湿度、換気、給排水、電源条件。
-- equipment.json: 空調、衛生、電気、防災、搬送設備の方式候補と容量条件。
+- equipment.json: 空調、換気、給水、給湯、排水、消火、電気、受変電、非常電源、照明、搬送、中央監視設備の方式候補と容量条件。
 - exam.json: 設計課題、計画条件、設備条件、製図課題、記述問題。
 - scoring.json: 採点項目、配点、部分点、評価基準、減点条件。
 - drawing.json: 資料、設備記号、凡例、標準配置、SVG部品参照。
@@ -58,4 +58,21 @@ data/
 ```
 
 各JSONはJSONとして妥当であり、JSON Schema Draft 2020-12のメタ情報を示す `$schema` を持つ。
+
+## 7. 生成器が出力する設備データ
+
+`js/generator/equipmentGenerator.js` が生成する `equipment.json` 互換オブジェクトは、`schemaVersion`、`buildingType`、入力建物を要約する `sourceBuilding`、および `equipment` を持つ。`equipment` は設備分野ごとのオブジェクトであり、各分野は `name` と `systems` を持つ。
+
+各 `systems` 要素は、原則として以下を持つ。
+
+- `id`: システム識別子。
+- `name`: 設備方式名。
+- `category`: 設備分類。
+- `serves`: 供給・対象範囲。該当する場合に設定する。
+- `capacity`: 容量値と単位。
+- `quantity`: 台数。該当する場合に設定する。
+- `location`: 機械室、電気室、シャフト、屋上などの設置場所。
+- `requirements`: 計画・採点で確認する要求条件。
+
+生成器はBuilding Generatorが出力する延床面積、客室数、利用人数、厨房、SPA、宴会場、機械室、電気室、受変電室、EPS、PS、DSを参照し、ホテル用途として成立する設備方式と容量を決定する。
 
