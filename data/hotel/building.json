@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schemaVersion": "1.0.0",
+  "buildingType": "hotel",
+  "building": {
+    "name": "臨海シティホテル計画",
+    "use": "宿泊施設（シティホテル）",
+    "location": "東京都江東区臨海副都心地区",
+    "siteArea": { "value": 5200, "unit": "m2" },
+    "totalFloorArea": { "value": 18200, "unit": "m2" },
+    "floors": {
+      "basement": 1,
+      "aboveGround": 10,
+      "penthouse": 1,
+      "description": "地下1階、地上10階、塔屋1階"
+    },
+    "structure": "鉄骨鉄筋コンクリート造、一部鉄骨造",
+    "occupancy": {
+      "guests": 360,
+      "staff": 90,
+      "banquetVisitors": 240,
+      "totalDesignPopulation": 690,
+      "unit": "persons"
+    }
+  }
+}

@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schemaVersion": "1.0.0",
+  "buildingType": "hotel",
+  "equipment": {
+    "hvac": {
+      "name": "空調",
+      "systems": [
+        { "id": "central-heat-source", "name": "中央熱源方式", "serves": ["ロビー", "宴会場", "レストラン"], "requirements": ["高効率熱源", "熱源台数分割", "BEMS計量"] },
+        { "id": "guestroom-fcu", "name": "客室ファンコイル方式", "serves": ["標準客室", "スイート客室"], "requirements": ["客室別温度制御", "外気処理系統分離", "停止時結露防止"] },
+        { "id": "kitchen-ventilation", "name": "厨房換気方式", "serves": ["厨房", "宴会厨房"], "requirements": ["給排気バランス", "防火ダンパー", "臭気拡散防止"] }
+      ]
+    },
+    "plumbing": {
+      "name": "衛生",
+      "systems": [
+        { "id": "water-supply", "name": "受水槽＋加圧給水方式", "requirements": ["用途別計量", "停電時給水継続", "飲料水衛生管理"] },
+        { "id": "hot-water", "name": "中央給湯循環方式", "requirements": ["客室ピーク負荷対応", "返湯温度管理", "レジオネラ対策"] },
+        { "id": "drainage", "name": "汚水・雑排水分流方式", "requirements": ["厨房グリース阻集器", "地下階排水ポンプ", "通気管経路確保"] }
+      ]
+    },
+    "electrical": {
+      "name": "電気",
+      "systems": [
+        { "id": "receiving-transformer", "name": "高圧受変電設備", "requirements": ["需要率を考慮した変圧器容量", "保守スペース", "浸水リスク低減"] },
+        { "id": "emergency-generator", "name": "非常用発電設備", "requirements": ["防災負荷供給", "保安負荷供給", "燃料備蓄72時間検討"] },
+        { "id": "lighting-control", "name": "照明制御設備", "requirements": ["共用部スケジュール制御", "宴会場シーン制御", "客室カード連動"] }
+      ]
+    },
+    "fireSafety": {
+      "name": "防災",
+      "systems": [
+        { "id": "sprinkler", "name": "スプリンクラー設備", "requirements": ["全館設置", "ポンプ非常電源", "末端試験弁配置"] },
+        { "id": "fire-alarm", "name": "自動火災報知設備", "requirements": ["用途別感知器選定", "非常放送連動", "防災センター表示"] },
+        { "id": "smoke-control", "name": "排煙設備", "requirements": ["宴会場・廊下排煙", "防火区画整合", "非常電源供給"] }
+      ]
+    },
+    "transportation": {
+      "name": "搬送",
+      "systems": [
+        { "id": "guest-elevator", "name": "客用エレベーター", "quantity": 3, "requirements": ["ロビー直結", "車いす対応", "停電時管制運転"] },
+        { "id": "service-elevator", "name": "サービス用エレベーター", "quantity": 1, "requirements": ["バックヤード接続", "リネン搬送", "客動線との分離"] },
+        { "id": "dumbwaiter", "name": "小荷物専用昇降機", "quantity": 1, "requirements": ["厨房・宴会階接続", "防火区画貫通処理", "保守点検スペース"] }
+      ]
+    }
+  }
+}
