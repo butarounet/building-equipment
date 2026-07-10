@@ -11,6 +11,8 @@
 │   └── style.css
 ├── js/
 │   ├── app.js
+│   ├── planner/
+│   │   └── buildingPlanner.js
 │   └── generator/
 │       ├── buildingGenerator.js
 │       └── equipmentGenerator.js
@@ -38,6 +40,7 @@
 - A4縦印刷対応
 - CSSとJavaScriptの分離
 - 用途別JSONデータによる模擬試験生成基盤
+- ホテル課題の建築企画を生成するBuilding Planner
 - ホテル用途の建築条件を自動生成するBuilding Generator
 - 建築条件からホテル用途の設備条件を自動生成するEquipment Generator
 - 生成条件を検査するQuality Checker
@@ -59,6 +62,25 @@
 
 各JSONには `schemaVersion` と `buildingType` を含め、用途追加時も同じ共通構造で参照できるようにしています。
 
+## Building Planner
+
+`js/planner/buildingPlanner.js` は、Building GeneratorとEquipment Generatorの前段で利用するホテル課題の建築企画を生成します。
+
+```js
+const { planHotelProject, validateHotelPlan } = require('./js/planner/buildingPlanner');
+
+const plan = planHotelProject({ hotelType: '国際会議対応ホテル' });
+const result = validateHotelPlan(plan);
+```
+
+### planHotelProject(options)
+
+`options.hotelType` が指定された場合は、都市型シティホテル、国際会議対応ホテル、宴会場併設ホテル、温浴施設付きホテル、宿泊主体型ホテルのいずれかを優先します。指定がない場合はランダムに選択し、設計テーマ、敷地条件、ゾーニング、規模、階数、客室、宴会、料飲、SPA、バックヤード、設備スペース、試験難易度の方針を返します。
+
+### validateHotelPlan(plan)
+
+Quality Checkerとして、ホテルタイプ、階数方針、客室方針、主要機能とホテルタイプの整合、建築設備士第二次試験の模擬課題としての成立性を検査します。
+
 ## Building Generator
 
 `js/generator/buildingGenerator.js` は、ホテル用途の `building.json` 互換オブジェクトを生成します。
@@ -67,12 +89,13 @@
 const { generateBuilding, validateBuilding } = require('./js/generator/buildingGenerator');
 
 const building = generateBuilding();
+const plannedBuilding = generateBuilding({ plan });
 const result = validateBuilding(building);
 ```
 
 ### generateBuilding()
 
-以下の建築条件をランダムに生成します。数値条件は呼び出しごとに変化し、本試験レベルの都市型ホテルとして成立する範囲に制限しています。
+以下の建築条件をランダムに生成します。`options.plan` が渡された場合は、Building Plannerのホテルタイプ、設計テーマ、敷地・階数・客室・宴会・料飲・SPA・設備スペース方針を反映して生成します。数値条件は呼び出しごとに変化し、本試験レベルの都市型ホテルとして成立する範囲に制限しています。
 
 - 建物名称、建物コンセプト、用途
 - 所在地条件、用途地域
@@ -103,7 +126,9 @@ Quality Checkerとして、生成後の建築条件を検査します。
 const { generateBuilding } = require('./js/generator/buildingGenerator');
 const { generateEquipment, validateEquipment } = require('./js/generator/equipmentGenerator');
 
+const plan = planHotelProject({ hotelType: '温浴施設付きホテル' });
 const building = generateBuilding();
+const plannedBuilding = generateBuilding({ plan });
 const equipment = generateEquipment(building);
 const result = validateEquipment(equipment, building);
 ```
@@ -133,7 +158,7 @@ Quality Checkerとして、生成後の設備条件を検査します。
 
 ## ドメインモデルとの整合
 
-Building Generatorは `docs/DOMAIN_MODEL.md` の「建物」エンティティを起点として、階数、主要室、設備スペースを生成します。Equipment Generatorは同モデルの「設備機器」「空調設備」「衛生設備」「電気設備」を、建物全体・室・設備スペースに紐づく設備方式、容量、設置場所として生成します。生成結果は後続のDrawing Generator、Exam Generator、Scoring Generator、およびQuality Checkerが参照する前提条件として利用できる構造です。
+Building Plannerは `docs/DOMAIN_MODEL.md` の「建築企画」エンティティとして、ホテルタイプと各種方針を定義します。Building Generatorは `docs/DOMAIN_MODEL.md` の「建物」エンティティを起点として、階数、主要室、設備スペースを生成します。Equipment Generatorは同モデルの「設備機器」「空調設備」「衛生設備」「電気設備」を、建物全体・室・設備スペースに紐づく設備方式、容量、設置場所として生成します。生成結果は後続のDrawing Generator、Exam Generator、Scoring Generator、およびQuality Checkerが参照する前提条件として利用できる構造です。
 
 ## テスト
 
