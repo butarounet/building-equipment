@@ -12,7 +12,16 @@
 - Data Layer: 用途別のテンプレート、原単位、問題部品、図面部品、採点基準を管理する。
 - Output Layer: HTML、PDF、SVG、JSONなどの出力を担当する。
 
-## 3. 生成エンジン分離
+## 3. 生成エンジン構成
+
+生成エンジンは、以下の6つの独立モジュールで構成する。各Generatorは前段の構造化データを入力とし、後段が利用できる構造化データを出力する。Quality Checkerは全工程の出力を横断的に検査し、必要に応じて該当Generatorへ再生成要求を返す。
+
+- Building Generator
+- Equipment Generator
+- Drawing Generator
+- Exam Generator
+- Scoring Generator
+- Quality Checker
 
 ### 3.1 Building Generator
 
