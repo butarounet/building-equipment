@@ -201,6 +201,95 @@ h2 {
   color: var(--color-muted);
 }
 
+.section-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+.section-heading p {
+  margin-bottom: 0;
+  color: var(--color-muted);
+}
+
+.generate-button {
+  flex: 0 0 auto;
+  padding: 12px 22px;
+  color: #ffffff;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  background: var(--color-accent);
+  border: 0;
+  border-radius: 999px;
+  box-shadow: 0 10px 24px rgba(15, 118, 110, 0.22);
+}
+
+.generate-button:hover,
+.generate-button:focus-visible {
+  background: var(--color-accent-dark);
+  outline: none;
+}
+
+.generation-result {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.generation-result__empty {
+  grid-column: 1 / -1;
+  margin: 0;
+  padding: 24px;
+  color: var(--color-muted);
+  background: #f8fafc;
+  border: 1px dashed var(--color-border);
+  border-radius: 18px;
+}
+
+.result-card {
+  padding: 24px;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+  border: 1px solid var(--color-border);
+  border-radius: 20px;
+}
+
+.result-card h3 {
+  margin: 0 0 16px;
+  color: var(--color-accent-dark);
+  font-size: 1.2rem;
+}
+
+.result-list {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+}
+
+.result-list__item {
+  display: grid;
+  grid-template-columns: minmax(96px, 0.38fr) 1fr;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.result-list__item:last-child {
+  border-bottom: 0;
+}
+
+.result-list dt {
+  color: var(--color-muted);
+  font-weight: 700;
+}
+
+.result-list dd {
+  margin: 0;
+  font-weight: 700;
+}
+
 @media (max-width: 720px) {
   .site-header__inner,
   .page-shell,
@@ -244,8 +333,23 @@ h2 {
   }
 
   .status-grid,
-  .check-list {
+  .check-list,
+  .generation-result {
     grid-template-columns: 1fr;
+  }
+
+  .section-heading {
+    flex-direction: column;
+  }
+
+  .generate-button {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .result-list__item {
+    grid-template-columns: 1fr;
+    gap: 2px;
   }
 }
 
@@ -293,5 +397,24 @@ h2 {
     width: 100%;
     max-width: none;
     page-break-inside: avoid;
+  }
+
+  .generation-result {
+    grid-template-columns: 1fr;
+    gap: 6mm;
+  }
+
+  .result-card {
+    break-inside: avoid;
+    padding: 5mm;
+    background: #ffffff;
+    border: 1px solid #000000;
+    border-radius: 0;
+  }
+
+  .result-list__item {
+    grid-template-columns: 38mm 1fr;
+    padding: 2mm 0;
+    border-bottom: 1px solid #cccccc;
   }
 }
