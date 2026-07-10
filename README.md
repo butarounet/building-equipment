@@ -15,7 +15,8 @@
 │   │   └── buildingPlanner.js
 │   └── generator/
 │       ├── buildingGenerator.js
-│       └── equipmentGenerator.js
+│       ├── equipmentGenerator.js
+│       └── material1Generator.js
 ├── svg/
 ├── data/
 │   └── hotel/
@@ -43,6 +44,7 @@
 - ホテル課題の建築企画を生成するBuilding Planner
 - ホテル用途の建築条件を自動生成するBuilding Generator
 - 建築条件からホテル用途の設備条件を自動生成するEquipment Generator
+- 建築企画・建築条件・設備条件から「資料1 計画条件」を生成するMaterial1 Generator
 - 生成条件を検査するQuality Checker
 - ブラウザで建築条件・設備条件を確認できるGenerator Preview画面
 
@@ -156,9 +158,41 @@ Quality Checkerとして、生成後の設備条件を検査します。
 
 戻り値は `{ isValid, errors, warnings, checks }` です。
 
+## Material1 Generator
+
+`js/generator/material1Generator.js` は、Building Planner、Building Generator、Equipment Generatorの出力を入力として、建築設備士第二次試験の「資料1 計画条件」に相当する資料データを生成します。
+
+```js
+const { generateMaterial1, validateMaterial1 } = require('./js/generator/material1Generator');
+
+const material1 = generateMaterial1({ plan, building, equipment });
+const result = validateMaterial1(material1);
+```
+
+### generateMaterial1({ plan, building, equipment })
+
+以下の構成を持つ資料1データオブジェクトを返します。
+
+- 設計課題
+- 建築物等概要
+- 建築設備概要
+- 空調換気設備条件
+- 給排水衛生設備条件
+- 電気設備条件
+- 防災設備条件
+- 設計上の注意事項
+
+資料文は本試験形式に近い条件提示型の文体で生成し、ホテル用途として自然な客室、宴会、料飲、SPA、バックヤード、設備スペースの条件を含めます。設備方式、容量、設置場所はEquipment Generatorの結果を参照するため、空調、換気、給水、給湯、排水、消火、受変電、非常電源、搬送、中央監視の内容と矛盾しない資料になります。
+
+### validateMaterial1(material1)
+
+Quality Checkerとして、資料1の必須項目、建築概要、設備概要、空調・衛生・電気・防災の条件、ホテル課題としての成立性、buildingとequipmentに由来する内容との整合を検査します。
+
+戻り値は `{ isValid, errors, warnings, checks }` です。
+
 ## ドメインモデルとの整合
 
-Building Plannerは `docs/DOMAIN_MODEL.md` の「建築企画」エンティティとして、ホテルタイプと各種方針を定義します。Building Generatorは `docs/DOMAIN_MODEL.md` の「建物」エンティティを起点として、階数、主要室、設備スペースを生成します。Equipment Generatorは同モデルの「設備機器」「空調設備」「衛生設備」「電気設備」を、建物全体・室・設備スペースに紐づく設備方式、容量、設置場所として生成します。生成結果は後続のDrawing Generator、Exam Generator、Scoring Generator、およびQuality Checkerが参照する前提条件として利用できる構造です。
+Building Plannerは `docs/DOMAIN_MODEL.md` の「建築企画」エンティティとして、ホテルタイプと各種方針を定義します。Building Generatorは `docs/DOMAIN_MODEL.md` の「建物」エンティティを起点として、階数、主要室、設備スペースを生成します。Equipment Generatorは同モデルの「設備機器」「空調設備」「衛生設備」「電気設備」を、建物全体・室・設備スペースに紐づく設備方式、容量、設置場所として生成します。Material1 Generatorは、建築企画、建物、設備機器を試験資料の「資料1 計画条件」として統合し、後続のDrawing Generator、Exam Generator、Scoring Generator、およびQuality Checkerが参照する前提条件として利用できる構造です。
 
 ## テスト
 
@@ -176,7 +210,8 @@ npm test
 2. 「模擬試験生成」ボタンを押します。
 3. Building Generatorが建物名称、用途、所在地、面積、階数、構造、主要室を生成します。
 4. 生成された建築条件を入力としてEquipment Generatorが空調、換気、給水、給湯、排水、消火、受変電、非常電源、中央監視の各方式を生成します。
-5. 生成結果表示エリアで建築条件と設備条件を確認します。
-6. 「JSONを表示」ボタンを押すと、直近で生成したBuilding GeneratorとEquipment Generatorの結果を整形済みJSONとして確認できます。模擬試験を未生成の状態で押した場合は「先に模擬試験生成を押してください」と表示されます。
+5. Material1 Generatorにより、建築条件と設備条件に整合する「資料1 計画条件」を生成できます。
+6. 生成結果表示エリアで建築条件と設備条件を確認します。
+7. 「JSONを表示」ボタンを押すと、直近で生成したBuilding GeneratorとEquipment Generatorの結果を整形済みJSONとして確認できます。模擬試験を未生成の状態で押した場合は「先に模擬試験生成を押してください」と表示されます。
 
 印刷する場合は画面内の「A4で印刷する」ボタン、またはブラウザの印刷機能を使用してください。生成結果カードとJSON表示エリアはPC表示とA4縦印刷の両方で読みやすいレイアウトになるよう調整しています。
