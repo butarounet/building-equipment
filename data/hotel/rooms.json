@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schemaVersion": "1.0.0",
+  "buildingType": "hotel",
+  "rooms": [
+    { "id": "B1-machine", "floorId": "B1F", "name": "機械室", "use": "熱源・空調機械", "area": { "value": 520, "unit": "m2" }, "zone": "機械室ゾーン", "equipmentRequirements": ["中央熱源", "外気処理", "排水ポンプ", "防火区画"] },
+    { "id": "B1-electrical", "floorId": "B1F", "name": "電気室", "use": "受変電・幹線分岐", "area": { "value": 180, "unit": "m2" }, "zone": "機械室ゾーン", "equipmentRequirements": ["受変電設備", "非常電源", "換気", "浸水対策"] },
+    { "id": "B1-water-tank", "floorId": "B1F", "name": "受水槽室", "use": "給水貯留", "area": { "value": 120, "unit": "m2" }, "zone": "機械室ゾーン", "equipmentRequirements": ["受水槽", "揚水ポンプ", "排水", "点検スペース"] },
+    { "id": "B1-parking", "floorId": "B1F", "name": "駐車場", "use": "宿泊者・搬入車両駐車", "area": { "value": 780, "unit": "m2" }, "zone": "駐車ゾーン", "equipmentRequirements": ["機械換気", "COセンサー", "スプリンクラー", "誘導灯"] },
+    { "id": "1F-lobby", "floorId": "1F", "name": "ロビー", "use": "受付・待合", "area": { "value": 420, "unit": "m2" }, "zone": "共用ゾーン", "equipmentRequirements": ["個別空調制御", "全熱交換換気", "非常放送", "照明調光"] },
+    { "id": "1F-front", "floorId": "1F", "name": "フロント事務室", "use": "宿泊受付・管理", "area": { "value": 95, "unit": "m2" }, "zone": "管理ゾーン", "equipmentRequirements": ["空調", "OA電源", "情報配線", "入退室管理"] },
+    { "id": "1F-restaurant", "floorId": "1F", "name": "レストラン", "use": "朝食・飲食提供", "area": { "value": 360, "unit": "m2" }, "zone": "料飲ゾーン", "equipmentRequirements": ["外気量制御", "厨房排気連動", "給排水", "照明調光"] },
+    { "id": "1F-kitchen", "floorId": "1F", "name": "厨房", "use": "調理・配膳", "area": { "value": 240, "unit": "m2" }, "zone": "料飲ゾーン", "equipmentRequirements": ["厨房排気", "給湯", "グリース阻集器", "動力電源", "自動火災報知"] },
+    { "id": "2F-banquet", "floorId": "2F", "name": "大宴会場", "use": "宴会・講演・式典", "area": { "value": 620, "unit": "m2" }, "zone": "宴会ゾーン", "equipmentRequirements": ["可変風量空調", "排煙", "音響電源", "照明シーン制御", "スプリンクラー"] },
+    { "id": "2F-meeting", "floorId": "2F", "name": "会議室", "use": "会議・研修", "area": { "value": 220, "unit": "m2" }, "zone": "会議ゾーン", "equipmentRequirements": ["個別空調", "CO2制御換気", "AV電源", "情報配線"] },
+    { "id": "2F-banquet-kitchen", "floorId": "2F", "name": "宴会厨房", "use": "宴会配膳・仕上げ", "area": { "value": 180, "unit": "m2" }, "zone": "バックヤードゾーン", "equipmentRequirements": ["厨房排気", "給湯", "排水", "防火ダンパー"] },
+    { "id": "3F-standard-room", "floorId": "3F", "name": "客室（低層階）", "use": "宿泊", "area": { "value": 28, "unit": "m2", "perRoom": true }, "zone": "客室ゾーン", "equipmentRequirements": ["ファンコイルユニット", "給湯", "ユニットバス排水", "カードスイッチ", "感知器"] },
+    { "id": "3F-housekeeping", "floorId": "3F", "name": "リネン室", "use": "清掃・リネン保管", "area": { "value": 55, "unit": "m2" }, "zone": "リネンゾーン", "equipmentRequirements": ["換気", "作業用電源", "給排水", "防火区画"] },
+    { "id": "4-10F-standard-room", "floorId": "4F-10F", "name": "標準客室", "use": "宿泊", "area": { "value": 30, "unit": "m2", "perRoom": true }, "zone": "客室ゾーン", "equipmentRequirements": ["個別温度制御", "給湯循環", "衛生器具", "客室分電盤", "非常照明"] },
+    { "id": "4-10F-suite", "floorId": "4F-10F", "name": "スイート客室", "use": "宿泊", "area": { "value": 62, "unit": "m2", "perRoom": true }, "zone": "客室ゾーン", "equipmentRequirements": ["個別空調", "高負荷給湯", "浴室換気", "専用照明制御", "情報配線"] },
+    { "id": "4-10F-corridor", "floorId": "4F-10F", "name": "客室階廊下", "use": "避難・客用動線", "area": { "value": 210, "unit": "m2", "perFloor": true }, "zone": "廊下ゾーン", "equipmentRequirements": ["廊下空調", "排煙", "誘導灯", "非常放送", "消火栓"] },
+    { "id": "PH-ev-machine", "floorId": "PH", "name": "エレベーター機械室", "use": "昇降機設備", "area": { "value": 85, "unit": "m2" }, "zone": "昇降機ゾーン", "equipmentRequirements": ["機械換気", "動力電源", "保守照明", "火災感知"] },
+    { "id": "PH-rooftop-equipment", "floorId": "PH", "name": "屋上設備置場", "use": "冷却塔・排気設備", "area": { "value": 160, "unit": "m2" }, "zone": "屋上設備ゾーン", "equipmentRequirements": ["冷却塔補給水", "防振", "動力電源", "ドレン排水"] }
+  ]
+}

@@ -1,0 +1,61 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schemaVersion": "1.0.0",
+  "buildingType": "hotel",
+  "floors": [
+    {
+      "id": "B1F",
+      "name": "地下1階",
+      "level": -1,
+      "floorArea": { "value": 2200, "unit": "m2" },
+      "primaryUse": "設備・サービス・駐車",
+      "zones": ["機械室ゾーン", "サービスゾーン", "駐車ゾーン"],
+      "notes": "熱源、受水槽、電気室を集約し、搬入動線をサービスヤードに接続する。"
+    },
+    {
+      "id": "1F",
+      "name": "1階",
+      "level": 1,
+      "floorArea": { "value": 2100, "unit": "m2" },
+      "primaryUse": "エントランス・ロビー・料飲",
+      "zones": ["共用ゾーン", "料飲ゾーン", "管理ゾーン"],
+      "notes": "宿泊客と宴会客の動線を分離し、厨房系統はサービス動線に接続する。"
+    },
+    {
+      "id": "2F",
+      "name": "2階",
+      "level": 2,
+      "floorArea": { "value": 2000, "unit": "m2" },
+      "primaryUse": "宴会・会議",
+      "zones": ["宴会ゾーン", "会議ゾーン", "バックヤードゾーン"],
+      "notes": "大宴会場は分割利用を想定し、空調・照明制御を区画ごとに行う。"
+    },
+    {
+      "id": "3F",
+      "name": "3階",
+      "level": 3,
+      "floorArea": { "value": 1800, "unit": "m2" },
+      "primaryUse": "客室・管理",
+      "zones": ["客室ゾーン", "管理ゾーン", "リネンゾーン"],
+      "notes": "低層客室と管理諸室を配置し、客用・サービス用エレベーターを分離する。"
+    },
+    {
+      "id": "4F-10F",
+      "name": "4〜10階",
+      "levelRange": { "from": 4, "to": 10 },
+      "typicalFloorArea": { "value": 1400, "unit": "m2" },
+      "primaryUse": "基準客室階",
+      "zones": ["客室ゾーン", "廊下ゾーン", "PS・EPSゾーン"],
+      "notes": "各階24室を標準とし、設備シャフトを上下階で整合させる。"
+    },
+    {
+      "id": "PH",
+      "name": "塔屋",
+      "level": 11,
+      "floorArea": { "value": 300, "unit": "m2" },
+      "primaryUse": "屋上設備・昇降機機械",
+      "zones": ["屋上設備ゾーン", "昇降機ゾーン"],
+      "notes": "冷却塔、排煙機、エレベーター機械室を配置し、保守動線を確保する。"
+    }
+  ]
+}

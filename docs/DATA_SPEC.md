@@ -22,12 +22,13 @@ data/
 
 各用途ディレクトリには、将来的に以下のデータを配置する。
 
-- building.json: 階数、面積、室構成、利用人数、運用時間などの建築条件。
-- equipment.json: 空調、換気、給排水、電気、防災、搬送設備の方式候補と容量条件。
-- rooms.json: 室名、標準面積、設備要求、温湿度、換気、給排水、電源条件。
-- exam_templates.json: 資料、記述問題、製図問題のテンプレート。
-- scoring_templates.json: 採点項目、配点、部分点、減点条件。
-- drawing_parts.json: 設備記号、凡例、標準配置、SVG部品参照。
+- building.json: 建物名称、用途、所在地、敷地面積、延床面積、階数、構造、利用人数などの建築条件。
+- floors.json: 地下階、地上階、塔屋などの階構成、面積、主要用途、ゾーン。
+- rooms.json: 各階の室名、室用途、室面積、ゾーン、設備要求、温湿度、換気、給排水、電源条件。
+- equipment.json: 空調、衛生、電気、防災、搬送設備の方式候補と容量条件。
+- exam.json: 設計課題、計画条件、設備条件、製図課題、記述問題。
+- scoring.json: 採点項目、配点、部分点、評価基準、減点条件。
+- drawing.json: 資料、設備記号、凡例、標準配置、SVG部品参照。
 
 ## 4. 共通データ
 
@@ -39,3 +40,22 @@ data/
 - 室名、設備名、単位は正規化辞書で統一する。
 - 原単位や法令チェックルールには更新日と根拠種別を持たせる。
 - 生成結果から参照されたデータバージョンを記録し、再現性を確保する。
+
+## 6. 実装済みデータ
+
+ホテル用途の初期データを `data/hotel/` に配置する。各JSONは `schemaVersion` と `buildingType` を持ち、将来ほかの用途を追加する場合は `data/<用途>/` に同じファイル構成を追加する。
+
+```text
+data/
+  hotel/
+    building.json
+    floors.json
+    rooms.json
+    equipment.json
+    exam.json
+    drawing.json
+    scoring.json
+```
+
+各JSONはJSONとして妥当であり、JSON Schema Draft 2020-12のメタ情報を示す `$schema` を持つ。
+
