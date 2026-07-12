@@ -237,3 +237,11 @@ npm test
 8. 「JSONを表示」ボタンを押すと、直近で生成したBuilding GeneratorとEquipment Generatorの結果を整形済みJSONとして確認できます。模擬試験を未生成の状態で押した場合は「先に模擬試験生成を押してください」と表示されます。
 
 印刷する場合は画面内の「A4で印刷する」ボタン、またはブラウザの印刷機能を使用してください。生成結果カードとJSON表示エリアはPC表示とA4縦印刷の両方で読みやすいレイアウトになるよう調整しています。
+
+## Drawing Generator
+
+`js/generator/drawingGenerator.js` は、Building Planner、Building Generator、Equipment Generator、Material Generatorの結果から、次StepのSVG変換で利用する図面JSONオブジェクトを生成します。`generateDrawings({ plan, building, equipment, materials })` は、A3横・mm単位の図面セットとして、配置図、各階平面図、白図、部分詳細図、答案用紙、凡例、タイトル欄、メタデータを返します。
+
+配置図は敷地境界、接道、方位、建物外形、配置寸法、車寄せ、駐車場、搬入口、歩行者入口、サービス動線、屋外設備置場、電気・ガス・上水・下水・雨水の接続位置、緑地、縮尺、図枠を保持します。平面図は地下1階、1階、2階、3階、4〜10階代表階、塔屋、屋上を対象に、通り芯、柱、壁、開口、階段、EV、室、寸法、設備室、EPS・PS・DS、注記を保持します。白図は平面図と同じ建築形状を使用しますが、設備機器、配管、ダクト、配線、設備記号、系統名称、模範解答情報を含めません。
+
+`validateDrawings(drawings, { plan, building, equipment, materials })` は、必須図面、図面ID、配置図コア要素、必要階、資料3と白図の階構成、白図への設備要素混入、EPS・PS・DS、設備室と設備条件、答案欄、縮尺・用紙・図枠を検査します。
