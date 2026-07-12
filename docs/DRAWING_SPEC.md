@@ -48,3 +48,11 @@ SVG図面は、Web表示とA4印刷の両方で判読できることを前提と
 - 文字の重なり、寸法線の欠落、印刷範囲外の要素を検出する。
 - 図面上の室名、面積、設備名称は資料と一致させる。
 - SVGはブラウザ表示とPDF変換で同等に読めることを確認する。
+
+## 6. Drawing Generator JSON
+
+`generateDrawings({ plan, building, equipment, materials })` はSVG作成前の図面JSONを生成する。トップレベルは`drawingSetId`、`projectTitle`、`sheetSize`、`unit`、`scalePolicy`、`sitePlan`、`floorPlans`、`blankPlans`、`detailDrawings`、`answerSheets`、`legends`、`titleBlocks`、`metadata`で構成する。
+
+`sitePlan`は、`drawingId`、`scale`、`frame`に加え、敷地境界、道路、方位、建物外形、配置寸法、車寄せ、駐車場、搬入口、歩行者入口、サービス動線、屋外設備置場、受電・都市ガス・上水・下水・雨水の接続位置、緑地を保持する。`floorPlans`は、地下1階、1階、2階、3階、4〜10階代表階、塔屋、屋上について、`floorId`、`floorName`、`scale`、`gridLines`、`columns`、`walls`、`doors`、`windows`、`stairs`、`elevators`、`rooms`、`dimensions`、`equipmentSpaces`、`shafts`、`annotations`を保持する。`shafts`はEPS、PS、DSを必須とし、上下階で同じ位置に近づける。
+
+`blankPlans`は白図用で、平面図と同じ建築形状、室名、通り芯、寸法、壁、柱、開口部を保持する。ただし設備機器、設備配管、ダクト、配線、設備記号、設備系統名称、模範解答情報は保持しない。`detailDrawings`はEPS、PS、DS、空調熱源設備室、給水設備室、受変電室、屋上設備置場、冷却塔周辺、配管立上り、ダクト立上りの詳細を持つ。`legends`は記号名、`symbolId`、分類、説明のみを持ち、SVGパスは次Stepで定義する。
