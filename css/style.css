@@ -589,3 +589,15 @@ h2 {
     color: #000;
   }
 }
+
+@page {
+  size: A3 landscape;
+  margin: 0;
+}
+
+@media print {
+  .no-print, .global-menu, .site-header, .site-footer, .generator-actions { display: none !important; }
+  body { background: #fff; }
+  .equipment-print-target, .architectural-print-target { width: 420mm; max-width: 420mm; margin: 0; background: #fff; }
+  .equipment-print-target svg, .architectural-print-target svg { width: 420mm; height: 297mm; max-width: none; }
+}
