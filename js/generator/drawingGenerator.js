@@ -101,7 +101,7 @@ function generateDrawings({ plan = null, building, equipment, materials } = {}) 
 
   return {
     drawingSetId: `drawing-set-${Date.now()}`,
-    projectTitle: b.name || plan?.hotelType || 'ホテル設備計画',
+    projectTitle: b.name || plan?.hotelTypeName || plan?.hotelType || 'ホテル設備計画',
     sheetSize: 'A3-landscape',
     unit: 'mm',
     scalePolicy: { sitePlan: '1/500', floorPlan: '1/200', detail: '1/50', answerSheet: '1/1' },
