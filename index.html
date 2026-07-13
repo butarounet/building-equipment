@@ -24,6 +24,7 @@
       <li><a href="#overview">概要</a></li>
       <li><a href="#conditions">計画条件</a></li>
       <li><a href="#generator-preview">生成プレビュー</a></li>
+      <li><a href="#svg-preview">SVG基盤プレビュー</a></li>
       <li><a href="#answer-sheet">解答用紙</a></li>
       <li><a href="#print">印刷</a></li>
     </ul>
@@ -81,6 +82,21 @@
       </div>
     </section>
 
+    <section class="card svg-preview no-print" id="svg-preview">
+      <div class="section-heading">
+        <div>
+          <h2>SVG基盤プレビュー</h2>
+          <p>A3横の編集可能なSVG図面基盤を表示し、図枠・タイトル枠・基本記号を確認できます。</p>
+        </div>
+        <div class="generator-actions no-print">
+          <button class="generate-button" type="button" id="svg-sample-button">SVGサンプル表示</button>
+          <button class="json-toggle-button" type="button" id="svg-save-button">SVG保存</button>
+        </div>
+      </div>
+      <p class="svg-preview__message" id="svg-preview-message" aria-live="polite">「SVGサンプル表示」ボタンを押すとA3横のサンプル図面を表示します。</p>
+      <div class="svg-preview__canvas" id="svg-preview-canvas" aria-label="SVG基盤プレビュー"></div>
+    </section>
+
     <section class="card answer-sheet" id="answer-sheet">
       <h2>解答用紙</h2>
       <p>記述欄や図面欄を配置するための印刷領域です。ブラウザの印刷機能でA4縦に出力できます。</p>
@@ -105,6 +121,9 @@
 
   <script src="js/generator/buildingGenerator.js" defer></script>
   <script src="js/generator/equipmentGenerator.js" defer></script>
+  <script src="js/svg/svgPrimitives.js" defer></script>
+  <script src="js/svg/svgSymbols.js" defer></script>
+  <script src="js/svg/svgRenderer.js" defer></script>
   <script src="js/app.js" defer></script>
 </body>
 </html>

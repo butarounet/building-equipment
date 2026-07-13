@@ -8,6 +8,11 @@ document.addEventListener('DOMContentLoaded', () => {
   const jsonPreviewCode = document.querySelector('#json-preview-code code');
   let generatedBuilding = null;
   let generatedEquipment = null;
+  let currentSvg = null;
+  const svgSampleButton = document.querySelector('#svg-sample-button');
+  const svgSaveButton = document.querySelector('#svg-save-button');
+  const svgPreviewCanvas = document.querySelector('#svg-preview-canvas');
+  const svgPreviewMessage = document.querySelector('#svg-preview-message');
 
   const formatArea = (area) => {
     if (!area || typeof area.value === 'undefined') return '-';
@@ -77,6 +82,34 @@ document.addEventListener('DOMContentLoaded', () => {
     `;
   };
 
+
+
+  const buildSvgSample = () => {
+    const { createSvgDocument } = window.svgRenderer;
+    const p = window.svgPrimitives;
+    let svg = createSvgDocument({ title: 'SVG基盤サンプル', drawingNumber: 'S-001', projectTitle: '建築設備士 第二次試験', scale: 'S=1/200' });
+
+    const grid = [40, 80, 120, 160, 200].map((x, index) => p.drawGridLine({ x1: x, y1: 35, x2: x, y2: 230, id: `grid-x-${index + 1}` })).join('')
+      + [45, 85, 125, 165, 205].map((y, index) => p.drawGridLine({ x1: 30, y1: y, x2: 235, y2: y, id: `grid-y-${index + 1}` })).join('');
+    const architecture = [
+      p.drawWall({ id: 'sample-wall', points: [[50, 55], [210, 55], [210, 185], [50, 185], [50, 55]] }),
+      p.drawWall({ id: 'sample-inner-wall', wallType: 'inner', points: [[130, 55], [130, 185]] }),
+      p.drawColumn({ x: 45, y: 50, width: 10, height: 10 }),
+      p.drawColumn({ x: 205, y: 50, width: 10, height: 10 }),
+      p.drawColumn({ x: 45, y: 180, width: 10, height: 10 }),
+      p.drawDoor({ x: 88, y: 185, width: 18, height: -18 }),
+      p.drawWindow({ x: 150, y: 55, width: 32 }),
+      p.drawRoomLabel({ x: 90, y: 120, text: '機械室' }),
+      p.drawRoomLabel({ x: 170, y: 120, text: '電気室' }),
+      p.drawNorthArrow({ x: 330, y: 55 }),
+      p.drawScaleBar({ x: 305, y: 210 }),
+      p.drawDimensionLine({ x: 50, y: 198, width: 160, text: '32,000' })
+    ].join('');
+    svg = svg.replace('<g id="Layer02_Grid" data-layer-name="Layer02_Grid" class="">', `<g id="Layer02_Grid" data-layer-name="Layer02_Grid" class="">${grid}`);
+    svg = svg.replace('<g id="Layer01_Architecture" data-layer-name="Layer01_Architecture" class="layer-architecture">', `<g id="Layer01_Architecture" data-layer-name="Layer01_Architecture" class="layer-architecture">${architecture}`);
+    return svg;
+  };
+
   if (menuToggle && menuList) {
     menuToggle.addEventListener('click', () => {
       const isOpen = menuList.classList.toggle('is-open');
@@ -109,6 +142,24 @@ document.addEventListener('DOMContentLoaded', () => {
         building: generatedBuilding,
         equipment: generatedEquipment
       }, null, 2);
+    });
+  }
+
+  if (svgSampleButton && svgPreviewCanvas) {
+    svgSampleButton.addEventListener('click', () => {
+      currentSvg = buildSvgSample();
+      svgPreviewCanvas.innerHTML = currentSvg;
+      svgPreviewMessage.textContent = 'SVGサンプルを表示しました。';
+    });
+  }
+
+  if (svgSaveButton) {
+    svgSaveButton.addEventListener('click', () => {
+      if (!currentSvg) {
+        svgPreviewMessage.textContent = '先にSVGサンプル表示を押してください。';
+        return;
+      }
+      window.svgRenderer.downloadSvg(currentSvg, 'svg-sample-a3-landscape.svg');
     });
   }
 });
