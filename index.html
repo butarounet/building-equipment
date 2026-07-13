@@ -25,6 +25,7 @@
       <li><a href="#conditions">計画条件</a></li>
       <li><a href="#generator-preview">生成プレビュー</a></li>
       <li><a href="#svg-preview">SVG基盤プレビュー</a></li>
+      <li><a href="#architectural-preview">建築図プレビュー</a></li>
       <li><a href="#answer-sheet">解答用紙</a></li>
       <li><a href="#print">印刷</a></li>
     </ul>
@@ -97,6 +98,36 @@
       <div class="svg-preview__canvas" id="svg-preview-canvas" aria-label="SVG基盤プレビュー"></div>
     </section>
 
+
+
+    <section class="card svg-preview no-print" id="architectural-preview">
+      <div class="section-heading">
+        <div>
+          <h2>建築図プレビュー</h2>
+          <p>Drawing GeneratorのJSONから、建築基本設計図風のA3横SVG（配置図・各階平面図・白図）を生成します。</p>
+        </div>
+        <div class="generator-actions no-print">
+          <label for="architectural-drawing-select">図面</label>
+          <select id="architectural-drawing-select">
+            <option value="site">配置図</option>
+            <option value="B1">地下1階</option>
+            <option value="1">1階</option>
+            <option value="2">2階</option>
+            <option value="3">3階</option>
+            <option value="4-10">代表階</option>
+            <option value="PH">塔屋</option>
+            <option value="RF">屋上</option>
+            <option value="blank">白図</option>
+          </select>
+          <button class="generate-button" type="button" id="architectural-show-button">建築図を表示</button>
+          <button class="json-toggle-button" type="button" id="architectural-save-button">SVG保存</button>
+          <button class="print-button" type="button" id="architectural-print-button">印刷</button>
+        </div>
+      </div>
+      <p class="svg-preview__message" id="architectural-preview-message" aria-live="polite">模擬試験生成後に建築図を表示できます。</p>
+      <div class="svg-preview__canvas architectural-print-target" id="architectural-preview-canvas" aria-label="建築図プレビュー"></div>
+    </section>
+
     <section class="card answer-sheet" id="answer-sheet">
       <h2>解答用紙</h2>
       <p>記述欄や図面欄を配置するための印刷領域です。ブラウザの印刷機能でA4縦に出力できます。</p>
@@ -121,9 +152,14 @@
 
   <script src="js/generator/buildingGenerator.js" defer></script>
   <script src="js/generator/equipmentGenerator.js" defer></script>
+  <script src="js/generator/drawingGenerator.js" defer></script>
   <script src="js/svg/svgPrimitives.js" defer></script>
   <script src="js/svg/svgSymbols.js" defer></script>
   <script src="js/svg/svgRenderer.js" defer></script>
+  <script src="js/svg/sitePlanRenderer.js" defer></script>
+  <script src="js/svg/floorPlanRenderer.js" defer></script>
+  <script src="js/svg/blankPlanRenderer.js" defer></script>
+  <script src="js/svg/architecturalDrawingRenderer.js" defer></script>
   <script src="js/app.js" defer></script>
 </body>
 </html>
