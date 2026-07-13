@@ -665,3 +665,44 @@ h2 {
     display: block;
   }
 }
+
+/* Step9-4B hotfix: keep architectural preview controls readable on narrow cards. */
+.architectural-preview__toolbar {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-bottom: 16px;
+}
+.architectural-preview__heading h2 { margin-bottom: 8px; }
+.architectural-preview__heading p { margin: 0; color: var(--color-muted); }
+.architectural-preview__controls,
+.architectural-preview__select,
+.architectural-preview__checks,
+.architectural-preview__buttons {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 12px;
+  min-width: 0;
+}
+.architectural-preview__select,
+.architectural-preview__checks label,
+.architectural-preview__buttons button {
+  min-width: max-content;
+  white-space: nowrap;
+  word-break: keep-all;
+  overflow-wrap: normal;
+}
+.architectural-preview__checks {
+  flex: 1 1 360px;
+  row-gap: 8px;
+}
+.architectural-preview__buttons {
+  flex: 1 1 420px;
+  justify-content: flex-end;
+  margin-left: auto;
+}
+.architectural-preview__select select { min-width: 10rem; }
+@media (max-width: 900px) {
+  .architectural-preview__buttons { justify-content: flex-start; margin-left: 0; }
+}

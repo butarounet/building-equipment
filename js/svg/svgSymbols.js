@@ -8,7 +8,7 @@
       symbol('symbol-elevator', '0 0 24 24', p.drawRect({ x: 3, y: 3, width: 18, height: 18, fill: 'none', className: 'line-medium' }) + p.drawText({ x: 12, y: 13, text: 'EV', className: 'text-note', fontSize: 5 })),
       symbol('symbol-column', '0 0 12 12', p.drawRect({ x: 1, y: 1, width: 10, height: 10, fill: 'none', className: 'line-medium' })),
       symbol('symbol-grid-bubble', '0 0 12 12', p.drawCircle({ x: 6, y: 6, r: 5, fill: 'none', className: 'line-grid' })),
-      ...['EPS','PS','DS','機械室','電気室','受変電室','給水設備室','空調熱源設備室'].map((label, i) => symbol(`symbol-space-${i}`, '0 0 34 18', p.drawRect({ x: 1, y: 1, width: 32, height: 16, fill: 'none', className: 'line-thin' }) + p.drawText({ x: 17, y: 10, text: label, className: 'text-note', fontSize: label.length > 4 ? 2.4 : 4 })))
+      ...['EPS','PS','DS','機械室','電気室','受変電室','給水設備室','空調熱源設備室'].map((label, i) => symbol(`symbol-space-${i}`, '0 0 34 18', p.drawRect({ x: 1, y: 1, width: 32, height: 16, fill: 'none', className: 'line-thin' }) + p.drawText({ x: 17, y: 10, text: label, className: 'text-note', fontSize: label.length > 4 ? 2.5 : 4 })))
     ].join('\n');
   }
   const api = { createSvgSymbols };
