@@ -72,6 +72,31 @@
     return p.drawGroup({ id: 'legend-floor-quality', className: 'legend', children: [p.drawRect({ x, y, width: 54, height: 70, fill: '#fff', className: 'line-medium' }), p.drawText({ x: x + 4, y: y + 6, text: '凡例', textAnchor: 'start', className: 'text-legend', fontSize: 3 }), ...rows.map((r, i) => p.drawText({ x: x + 5, y: y + 14 + i * 6, text: r, textAnchor: 'start', className: 'text-legend', fontSize: 2.5 }))] }) + p.drawGroup({ id: 'notes-floor-quality', className: 'notes', children: [p.drawRect({ x, y: 148, width: 54, height: 56, fill: '#fff', className: 'line-thin' }), p.drawText({ x: x + 4, y: 154, text: '注記', textAnchor: 'start', className: 'text-note', fontSize: 3 }), p.drawText({ x: x + 4, y: 162, text: `${plan.floorName || '階'} / ホテル`, textAnchor: 'start', className: 'text-note', fontSize: 2.5 }), p.drawText({ x: x + 4, y: 170, text: `占有率 ${Math.round((metrics.paperUsageRatio || .75) * 100)}%`, textAnchor: 'start', className: 'text-note', fontSize: 2.5 }), p.drawText({ x: x + 4, y: 178, text: '白黒CAD風 模擬試験', textAnchor: 'start', className: 'text-note', fontSize: 2.5 }), p.drawText({ x: x + 4, y: 186, text: '床:客室カーペット/共用石', textAnchor: 'start', className: 'text-note', fontSize: 2.5 }), p.drawText({ x: x + 4, y: 194, text: '天井高:客室2.6m 共用3.0m', textAnchor: 'start', className: 'text-note', fontSize: 2.5 })] });
   }
 
+
+  function renderRoomTexts(rooms, t) {
+    return (rooms || []).map((r, i) => {
+      const id = escId(r.roomId || i + 1);
+      const cx = t.x(safe(r.x) + safe(r.width) / 2);
+      const cy = t.y(safe(r.y) + safe(r.height) / 2);
+      if (r.zone === 'guest') {
+        const number = r.roomNumber || String(r.name || '').replace(/[^0-9]/g, '') || r.name || '客室';
+        return p.drawText({ id: `room-label-${id}`, x: cx, y: cy - 4, text: `客室${number}`, className: 'text-room', fontSize: 3.0 }) +
+          p.drawText({ id: `room-type-${id}`, x: cx, y: cy, text: r.roomType || '客室', className: 'text-dimension', fontSize: 2.5 }) +
+          p.drawText({ id: `room-area-${id}`, x: cx, y: cy + 4, text: r.area ? `${r.area}㎡` : '', className: 'text-dimension', fontSize: 2.5 });
+      }
+      const small = t.l(safe(r.width)) < 18 || t.l(safe(r.height)) < 10 || ['shaft','stair'].includes(r.zone);
+      if (small) {
+        const lx = Math.min(338, Math.max(22, t.x(safe(r.x) + safe(r.width)) + 8));
+        const ly = cy + ((i % 5) - 2) * 4;
+        return p.drawLine({ id: `leader-${id}`, x1: cx, y1: cy, x2: lx - 2, y2: ly, className: 'line-thin', strokeWidth: .09 }) +
+          p.drawText({ id: `room-label-${id}`, x: lx, y: ly - 1.8, text: r.name || '室', textAnchor: 'start', className: 'text-room', fontSize: 2.5 }) +
+          p.drawText({ id: `room-area-${id}`, x: lx, y: ly + 2.2, text: r.area ? `${r.area}㎡` : '', textAnchor: 'start', className: 'text-dimension', fontSize: 2.5 });
+      }
+      return p.drawText({ id: `room-label-${id}`, x: cx, y: cy - 2, text: r.name || '室', className: 'text-room', fontSize: 3.2 }) +
+        p.drawText({ id: `room-area-${id}`, x: cx, y: cy + 3, text: r.area ? `${r.area}㎡` : '', className: 'text-dimension', fontSize: 2.5 });
+    }).join('');
+  }
+
   function renderFloorPlan(floorPlan = {}, options = {}) {
     try {
       let plan = floorPlan || {}; if (options.highQuality && (!plan.rooms || !plan.rooms.length) && floorTemplates.createFloorTemplate) plan = floorTemplates.createFloorTemplate(options.floorType || '代表客室階'); const title = options.title || plan.floorName || '平面図'; const t = txFor(plan);
@@ -84,7 +109,7 @@
       (plan.windows || []).forEach((w, i) => arch.push(p.drawWindow({ id: `window-${escId(w.id || i + 1)}`, x: t.x(w.x), y: t.y(w.y), width: Math.max(8, t.l(w.width || 3600)) })));
       (plan.stairs || []).forEach((st, i) => arch.push(p.drawRect({ id: `stair-${escId(st.id || i + 1)}`, x: t.x(st.x), y: t.y(st.y), width: t.l(st.width), height: t.l(st.height), fill: 'none', className: 'line-medium' }), p.drawText({ id: `stair-label-${i + 1}`, x: t.x(st.x + st.width / 2), y: t.y(st.y + st.height / 2), text: '階段', className: 'text-room', fontSize: 3 })));
       (plan.elevators || []).forEach((e, i) => arch.push(p.drawRect({ id: `ev-${escId(e.id || i + 1)}`, x: t.x(e.x), y: t.y(e.y), width: t.l(e.width), height: t.l(e.height), fill: 'none', className: 'line-medium' }), p.drawText({ id: `ev-label-${i + 1}`, x: t.x(e.x + e.width / 2), y: t.y(e.y + e.height / 2), text: 'EV', className: 'text-room', fontSize: 3 })));
-      const text = rooms.map((r, i) => p.drawText({ id: `room-label-${escId(r.roomId || i + 1)}`, x: t.x(safe(r.x) + safe(r.width) / 2), y: t.y(safe(r.y) + safe(r.height) / 2) - 2, text: r.name || '室', className: 'text-room', fontSize: r.zone === 'guest' ? 3.0 : 3.2 }) + p.drawText({ id: `room-area-${escId(r.roomId || i + 1)}`, x: t.x(safe(r.x) + safe(r.width) / 2), y: t.y(safe(r.y) + safe(r.height) / 2) + 3, text: r.area ? `${r.area}㎡` : '', className: 'text-dimension', fontSize: 2.5 })).join('');
+      const text = renderRoomTexts(rooms, t);
       const eq = [...(plan.equipmentSpaces || []), ...(plan.shafts || [])].map((e, i) => p.drawRect({ id: `equipment-space-${escId(e.id || i + 1)}`, x: t.x(e.x), y: t.y(e.y), width: t.l(e.width), height: t.l(e.height), fill: 'none', className: 'line-thin' }) + p.drawText({ id: `equipment-label-${escId(e.id || i + 1)}`, x: t.x(e.x + e.width / 2), y: t.y(e.y + e.height / 2), text: e.name || e.shaftType || '設備室', className: 'text-room', fontSize: 2.6 })).join('');
       const dims = renderDimensions(plan.dimensions, t) + p.drawDimensionLine({ id: `dimension-${escId(plan.floorId || 'floor')}-width`, x: t.x(0), y: t.y(t.depth) + 28, width: t.l(t.width), text: `${Math.round(t.width).toLocaleString('ja-JP')}` }) + p.drawDimensionLine({ id: `dimension-${escId(plan.floorId || 'floor')}-depth`, x1: t.x(t.width) + 28, y1: t.y(0), x2: t.x(t.width) + 28, y2: t.y(t.depth), text: `${Math.round(t.depth).toLocaleString('ja-JP')}` }) + p.drawScaleBar({ id: 'scale-bar-floor', x: 84, y: 255, text: scaleText(options.scale || plan.scale, '1/200') });
       const notes = p.drawNorthArrow({ id: 'north-arrow-floor', x: 382, y: 42 }) + p.drawScaleBar({ id: 'scale-bar-quality', x: 348, y: 218, text: scaleText(options.scale || plan.scale, '1/200') }) + renderLegendAndNotes(plan, t, metrics);
