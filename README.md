@@ -245,3 +245,9 @@ npm test
 配置図は敷地境界、接道、方位、建物外形、配置寸法、車寄せ、駐車場、搬入口、歩行者入口、サービス動線、屋外設備置場、電気・ガス・上水・下水・雨水の接続位置、緑地、縮尺、図枠を保持します。平面図は地下1階、1階、2階、3階、4〜10階代表階、塔屋、屋上を対象に、通り芯、柱、壁、開口、階段、EV、室、寸法、設備室、EPS・PS・DS、注記を保持します。白図は平面図と同じ建築形状を使用しますが、設備機器、配管、ダクト、配線、設備記号、系統名称、模範解答情報を含めません。
 
 `validateDrawings(drawings, { plan, building, equipment, materials })` は、必須図面、図面ID、配置図コア要素、必要階、資料3と白図の階構成、白図への設備要素混入、EPS・PS・DS、設備室と設備条件、答案欄、縮尺・用紙・図枠を検査します。
+
+## SVG描画基盤
+
+Step9-1では、Drawing Generatorが生成する図面JSONを編集可能なSVGに変換するための共通描画基盤を追加しました。`js/svg/svgRenderer.js`がA3横のSVGルート、`defs`、図枠、タイトル枠、メタデータ、レイヤーを生成し、`serializeSvg()`と`downloadSvg()`で文字列化と保存を行います。`js/svg/svgPrimitives.js`は線・矩形・柱・壁・扉・窓・寸法線などの基本図形、`js/svg/svgSymbols.js`は方位・階段・EV・設備スペース等の再利用記号を提供します。
+
+レイヤーは`Layer01_Architecture`、`Layer02_Grid`、`Layer03_Dimensions`、`Layer04_Equipment`、`Layer05_Text`、`Layer06_Answer`、`Layer07_Print`を標準とし、白図モードでは設備・解答レイヤーを除外できます。CAD風の白黒SVGを前提に、外壁0.50mm、内壁0.30mm、柱0.35mm、設備0.25mm、寸法0.15mm、通り芯0.13mm、補助線0.10mm、図枠0.50mmの線幅標準を定義しています。日本語フォントはYu Gothic、Hiragino Kaku Gothic ProN、sans-serifを使用します。

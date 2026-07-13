@@ -56,3 +56,17 @@ SVG図面は、Web表示とA4印刷の両方で判読できることを前提と
 `sitePlan`は、`drawingId`、`scale`、`frame`に加え、敷地境界、道路、方位、建物外形、配置寸法、車寄せ、駐車場、搬入口、歩行者入口、サービス動線、屋外設備置場、受電・都市ガス・上水・下水・雨水の接続位置、緑地を保持する。`floorPlans`は、地下1階、1階、2階、3階、4〜10階代表階、塔屋、屋上について、`floorId`、`floorName`、`scale`、`gridLines`、`columns`、`walls`、`doors`、`windows`、`stairs`、`elevators`、`rooms`、`dimensions`、`equipmentSpaces`、`shafts`、`annotations`を保持する。`shafts`はEPS、PS、DSを必須とし、上下階で同じ位置に近づける。
 
 `blankPlans`は白図用で、平面図と同じ建築形状、室名、通り芯、寸法、壁、柱、開口部を保持する。ただし設備機器、設備配管、ダクト、配線、設備記号、設備系統名称、模範解答情報は保持しない。`detailDrawings`はEPS、PS、DS、空調熱源設備室、給水設備室、受変電室、屋上設備置場、冷却塔周辺、配管立上り、ダクト立上りの詳細を持つ。`legends`は記号名、`symbolId`、分類、説明のみを持ち、SVGパスは次Stepで定義する。
+
+## SVG描画仕様（Step9-1）
+
+標準シートはA3横、幅420mm、高さ297mm、`viewBox="0 0 420 297"`です。SVG内部には白背景、黒線、グレースケール印刷対応のCSSを埋め込みます。必須レイヤーは以下の7層です。
+
+1. `Layer01_Architecture`：壁、柱、扉、窓、階段、EVなどの建築要素
+2. `Layer02_Grid`：通り芯、グリッド符号
+3. `Layer03_Dimensions`：寸法線、寸法値
+4. `Layer04_Equipment`：設備機器・設備スペース（白図では除外可能）
+5. `Layer05_Text`：室名、注記、凡例
+6. `Layer06_Answer`：解答・採点用の表示（白図では除外可能）
+7. `Layer07_Print`：印刷専用情報
+
+標準線幅は外壁0.50mm、内壁0.30mm、柱0.35mm、設備0.25mm、寸法0.15mm、通り芯0.13mm、補助線0.10mm、図枠0.50mmです。線種はCSSクラスで実線、破線、一点鎖線、二点鎖線を表現します。文字は日本語表示を前提に、図面タイトル5.0mm、室名3.5mm、寸法・注記・凡例・図枠文字2.5mmを標準とします。印刷は`@page size: A3 landscape; margin: 0;`を前提とし、図枠が切れないよう内側余白を持つSVG図枠を使用します。
