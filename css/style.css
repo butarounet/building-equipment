@@ -601,3 +601,67 @@ h2 {
   .equipment-print-target, .architectural-print-target { width: 420mm; max-width: 420mm; margin: 0; background: #fff; }
   .equipment-print-target svg, .architectural-print-target svg { width: 420mm; height: 297mm; max-width: none; }
 }
+
+.exam-booklet {
+  display: grid;
+  gap: 18px;
+}
+
+.exam-page {
+  padding: 20px;
+  background: #ffffff;
+  border: 1px solid var(--color-border);
+  border-radius: 14px;
+}
+
+.exam-cover {
+  min-height: 360px;
+  display: grid;
+  align-content: center;
+  text-align: center;
+}
+
+.exam-fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-top: 24px;
+}
+
+.exam-fields span {
+  padding: 14px;
+  border: 1px solid #111827;
+  text-align: left;
+}
+
+.exam-meta {
+  color: var(--color-muted);
+  font-size: 0.9rem;
+}
+
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 12mm;
+  }
+
+  .exam-preview {
+    display: block !important;
+  }
+
+  .exam-page {
+    break-after: page;
+    break-inside: avoid;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+  }
+
+  .exam-page:last-child {
+    break-after: auto;
+  }
+
+  .exam-booklet {
+    display: block;
+  }
+}

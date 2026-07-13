@@ -6,9 +6,12 @@ document.addEventListener('DOMContentLoaded', () => {
   const jsonToggleButton = document.querySelector('#json-toggle-button');
   const resultArea = document.querySelector('#generation-result');
   const jsonPreviewCode = document.querySelector('#json-preview-code code');
+  let generatedPlan = null;
   let generatedBuilding = null;
   let generatedEquipmentData = null;
+  let generatedMaterials = null;
   let generatedDrawings = null;
+  let generatedExam = null;
   let currentSvg = null;
   const svgSampleButton = document.querySelector('#svg-sample-button');
   const svgSaveButton = document.querySelector('#svg-save-button');
@@ -22,6 +25,42 @@ document.addEventListener('DOMContentLoaded', () => {
   const architecturalCanvas = document.querySelector('#architectural-preview-canvas');
   const architecturalMessage = document.querySelector('#architectural-preview-message');
   let currentArchitecturalSvg = null;
+
+
+  const examGenerateButton = document.querySelector('#exam-generate-button');
+  const examShowButton = document.querySelector('#exam-show-button');
+  const examJsonButton = document.querySelector('#exam-json-button');
+  const examPrintButton = document.querySelector('#exam-print-button');
+  const examBooklet = document.querySelector('#exam-booklet');
+  const examJsonCode = document.querySelector('#exam-json-code code');
+  const examJsonPre = document.querySelector('#exam-json-code');
+  const examMessage = document.querySelector('#exam-preview-message');
+
+  const escapeHtml = (value) => String(value ?? '').replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
+  const renderQuestion = (q) => `<li><strong>${escapeHtml(q.questionId)} ${escapeHtml(q.title)}</strong><p>${escapeHtml(q.prompt)}</p><p class="exam-meta">解答形式: ${escapeHtml(q.answerType)} / 要求点: ${escapeHtml(q.requiredPoints)}</p></li>`;
+  const renderExamBooklet = (exam) => {
+    if (!exam) return '<p class="generation-result__empty">試験問題が未生成です。</p>';
+    const pc = exam.planningConditions || {};
+    return `
+      <article class="exam-page exam-cover"><h3>${escapeHtml(exam.cover.examName)}</h3><h2>${escapeHtml(exam.projectTitle)}</h2><p>${escapeHtml(exam.cover.bookletLabel)} / ${escapeHtml(exam.cover.learningLabel)}</p><p>試験時間 ${escapeHtml(exam.cover.duration)}</p><div class="exam-fields"><span>受験番号：</span><span>氏名：</span></div></article>
+      <article class="exam-page"><h3>注意事項</h3><ol>${exam.instructions.map((item) => `<li>${escapeHtml(item)}</li>`).join('')}</ol><h3>設計課題</h3><p>${escapeHtml(exam.designTask.concept)}：${escapeHtml(exam.projectTitle)}</p><h3>計画条件</h3><dl class="result-list">${createDefinitionList([{ label: '用途', value: escapeHtml(pc.use) }, { label: '場所', value: escapeHtml(pc.location) }, { label: '延べ面積', value: formatArea(pc.totalFloorArea) }, { label: '階数', value: escapeHtml(pc.floors?.description) }, { label: '客室数', value: `${escapeHtml(pc.guestRooms)}室` }])}</dl></article>
+      <article class="exam-page"><h3>必須問題 建築設備基本計画</h3><ol>${exam.mandatoryQuestions.map(renderQuestion).join('')}</ol></article>
+      <article class="exam-page"><h3>選択問題A 空調・換気設備</h3><ol>${exam.electiveSections.hvac.map(renderQuestion).join('')}</ol></article>
+      <article class="exam-page"><h3>選択問題B 給排水衛生設備</h3><ol>${exam.electiveSections.plumbing.map(renderQuestion).join('')}</ol></article>
+      <article class="exam-page"><h3>選択問題C 電気設備</h3><ol>${exam.electiveSections.electrical.map(renderQuestion).join('')}</ol></article>`;
+  };
+
+  const ensureExam = () => {
+    if (!generatedBuilding) {
+      generatedPlan = window.planHotelProject ? window.planHotelProject() : null;
+      generatedBuilding = generateBuilding({ plan: generatedPlan });
+      generatedEquipmentData = generateEquipment(generatedBuilding);
+    }
+    generatedMaterials = generatedMaterials || (window.generateMaterials ? window.generateMaterials({ plan: generatedPlan, building: generatedBuilding, equipment: generatedEquipmentData }) : null);
+    generatedDrawings = generatedDrawings || (window.generateDrawings ? window.generateDrawings({ plan: generatedPlan, building: generatedBuilding, equipment: generatedEquipmentData, materials: generatedMaterials }) : null);
+    generatedExam = window.generateExam({ plan: generatedPlan, building: generatedBuilding, equipment: generatedEquipmentData, materials: generatedMaterials, drawings: generatedDrawings });
+    return generatedExam;
+  };
 
   const equipmentDisciplineSelect = document.querySelector('#equipment-discipline-select');
   const equipmentFloorSelect = document.querySelector('#equipment-floor-select');
@@ -37,7 +76,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!generatedBuilding) return { error: '模擬試験が未生成です。先に「模擬試験生成」を押してください。' };
     if (!generatedDrawings) {
       try {
-        generatedDrawings = window.generateDrawings ? window.generateDrawings({ building: generatedBuilding, equipment: generatedEquipmentData }) : null;
+        generatedMaterials = generatedMaterials || (window.generateMaterials ? window.generateMaterials({ plan: generatedPlan, building: generatedBuilding, equipment: generatedEquipmentData }) : null);
+        generatedDrawings = window.generateDrawings ? window.generateDrawings({ plan: generatedPlan, building: generatedBuilding, equipment: generatedEquipmentData, materials: generatedMaterials }) : null;
       } catch (error) {
         return { error: `Drawing Generatorのデータがありません。${error.message || ''}` };
       }
@@ -166,10 +206,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (generateButton && resultArea) {
     generateButton.addEventListener('click', () => {
-      generatedBuilding = generateBuilding();
+      generatedPlan = window.planHotelProject ? window.planHotelProject() : null;
+      generatedBuilding = generateBuilding({ plan: generatedPlan });
       generatedEquipmentData = generateEquipment(generatedBuilding);
+      generatedMaterials = window.generateMaterials ? window.generateMaterials({ plan: generatedPlan, building: generatedBuilding, equipment: generatedEquipmentData }) : null;
+      generatedExam = null;
       try {
-        generatedDrawings = window.generateDrawings ? window.generateDrawings({ building: generatedBuilding, equipment: generatedEquipmentData }) : null;
+        generatedMaterials = generatedMaterials || (window.generateMaterials ? window.generateMaterials({ plan: generatedPlan, building: generatedBuilding, equipment: generatedEquipmentData }) : null);
+        generatedDrawings = window.generateDrawings ? window.generateDrawings({ plan: generatedPlan, building: generatedBuilding, equipment: generatedEquipmentData, materials: generatedMaterials }) : null;
       } catch (error) {
         generatedDrawings = null;
       }
@@ -185,9 +229,12 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       jsonPreviewCode.textContent = JSON.stringify({
+        plan: generatedPlan,
         building: generatedBuilding,
         equipment: generatedEquipmentData,
-        drawings: generatedDrawings
+        materials: generatedMaterials,
+        drawings: generatedDrawings,
+        exam: generatedExam
       }, null, 2);
     });
   }
@@ -272,5 +319,29 @@ document.addEventListener('DOMContentLoaded', () => {
   if (equipmentPrintButton) {
     equipmentPrintButton.addEventListener('click', () => window.print());
   }
+
+
+  if (examGenerateButton) {
+    examGenerateButton.addEventListener('click', () => {
+      try { ensureExam(); examMessage.textContent = '試験問題を生成しました。'; }
+      catch (error) { examMessage.textContent = `試験問題生成に失敗しました。${error.message || ''}`; }
+    });
+  }
+
+  if (examShowButton && examBooklet) {
+    examShowButton.addEventListener('click', () => {
+      try { const exam = generatedExam || ensureExam(); examBooklet.innerHTML = renderExamBooklet(exam); examMessage.textContent = '問題集を表示しました。'; }
+      catch (error) { examMessage.textContent = `問題集表示に失敗しました。${error.message || ''}`; }
+    });
+  }
+
+  if (examJsonButton && examJsonCode) {
+    examJsonButton.addEventListener('click', () => {
+      try { const exam = generatedExam || ensureExam(); examJsonCode.textContent = JSON.stringify(exam, null, 2); examJsonPre.hidden = !examJsonPre.hidden; }
+      catch (error) { examMessage.textContent = `JSON表示に失敗しました。${error.message || ''}`; }
+    });
+  }
+
+  if (examPrintButton) examPrintButton.addEventListener('click', () => window.print());
 
 });

@@ -166,5 +166,6 @@ function validateMaterial1(material1) {
 }
 
 if (typeof module !== 'undefined') {
-  module.exports = { generateMaterial1, validateMaterial1 };
+  if (typeof module !== 'undefined') module.exports = { generateMaterial1, validateMaterial1 };
+if (typeof window !== 'undefined') { window.generateMaterial1 = generateMaterial1; window.validateMaterial1 = validateMaterial1; }
 }
