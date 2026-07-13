@@ -28,7 +28,7 @@
       <li><a href="#architectural-preview">建築図プレビュー</a></li>
       <li><a href="#equipment-preview">設備図プレビュー</a></li>
       <li><a href="#exam-preview">試験問題プレビュー</a></li>
-      <li><a href="#answer-sheet">解答用紙</a></li>
+      <li><a href="#answer-sheet-preview">答案用紙プレビュー</a></li>
       <li><a href="#print">印刷</a></li>
     </ul>
   </nav>
@@ -186,15 +186,29 @@
       <pre class="json-preview__code" id="exam-json-code" hidden><code>試験問題JSONはここに表示されます。</code></pre>
     </section>
 
-    <section class="card answer-sheet" id="answer-sheet">
-      <h2>解答用紙</h2>
-      <p>記述欄や図面欄を配置するための印刷領域です。ブラウザの印刷機能でA4縦に出力できます。</p>
-      <div class="sheet-preview" aria-label="A4解答用紙プレビュー">
-        <div class="sheet-preview__header">A4 解答用紙</div>
-        <div class="sheet-preview__line"></div>
-        <div class="sheet-preview__line"></div>
-        <div class="sheet-preview__line sheet-preview__line--wide"></div>
+    <section class="card answer-sheet" id="answer-sheet-preview">
+      <div class="section-heading">
+        <div>
+          <h2>答案用紙プレビュー</h2>
+          <p>Exam/Material/Drawing Generatorの結果から、空欄中心のA4縦・A3横答案用紙を生成します。</p>
+        </div>
+        <div class="generator-actions no-print">
+          <label for="answer-sheet-select">用紙</label>
+          <select id="answer-sheet-select">
+            <option value="mandatoryPlanningSheet">建築設備基本計画</option>
+            <option value="hvacSheet">空調・換気設備</option>
+            <option value="plumbingSheet">給排水衛生設備</option>
+            <option value="electricalSheet">電気設備</option>
+            <option value="commonDescriptionSheet">共通記述用紙</option>
+          </select>
+          <button class="generate-button" type="button" id="answer-sheet-generate-button">答案用紙を生成</button>
+          <button class="json-toggle-button" type="button" id="answer-sheet-show-button">答案用紙を表示</button>
+          <button class="json-toggle-button" type="button" id="answer-sheet-save-button">SVG保存</button>
+          <button class="print-button" type="button" id="answer-sheet-print-button">印刷</button>
+        </div>
       </div>
+      <p class="svg-preview__message" id="answer-sheet-message" aria-live="polite">「答案用紙を生成」ボタンで答案用紙セットを作成します。</p>
+      <div class="answer-sheet-canvas" id="answer-sheet-canvas" aria-label="答案用紙プレビュー"></div>
     </section>
 
     <section class="card no-print" id="print">
@@ -215,6 +229,7 @@
   <script src="js/generator/materialGenerator.js" defer></script>
   <script src="js/generator/drawingGenerator.js" defer></script>
   <script src="js/generator/examGenerator.js" defer></script>
+  <script src="js/generator/answerSheetGenerator.js" defer></script>
   <script src="js/svg/svgPrimitives.js" defer></script>
   <script src="js/svg/svgSymbols.js" defer></script>
   <script src="js/svg/svgRenderer.js" defer></script>
@@ -228,6 +243,7 @@
   <script src="js/svg/plumbingDrawingRenderer.js" defer></script>
   <script src="js/svg/electricalDrawingRenderer.js" defer></script>
   <script src="js/svg/equipmentDrawingRenderer.js" defer></script>
+  <script src="js/svg/answerSheetRenderer.js" defer></script>
   <script src="js/app.js" defer></script>
 </body>
 </html>

@@ -12,6 +12,8 @@ document.addEventListener('DOMContentLoaded', () => {
   let generatedMaterials = null;
   let generatedDrawings = null;
   let generatedExam = null;
+  let generatedAnswerSheetSet = null;
+  let currentAnswerSheetOutput = null;
   let currentSvg = null;
   const svgSampleButton = document.querySelector('#svg-sample-button');
   const svgSaveButton = document.querySelector('#svg-save-button');
@@ -36,6 +38,31 @@ document.addEventListener('DOMContentLoaded', () => {
   const examJsonPre = document.querySelector('#exam-json-code');
   const examMessage = document.querySelector('#exam-preview-message');
 
+  const answerSheetSelect = document.querySelector('#answer-sheet-select');
+  const answerSheetGenerateButton = document.querySelector('#answer-sheet-generate-button');
+  const answerSheetShowButton = document.querySelector('#answer-sheet-show-button');
+  const answerSheetSaveButton = document.querySelector('#answer-sheet-save-button');
+  const answerSheetPrintButton = document.querySelector('#answer-sheet-print-button');
+  const answerSheetCanvas = document.querySelector('#answer-sheet-canvas');
+  const answerSheetMessage = document.querySelector('#answer-sheet-message');
+
+  const reportFeatureError = (target, prefix, error) => {
+    const message = `${prefix}${error?.message ? `: ${error.message}` : ''}`;
+    if (target) target.textContent = message;
+    console.error(message, error);
+  };
+
+  const onSafe = (element, eventName, handler, label, target) => {
+    if (!element) return;
+    element.addEventListener(eventName, (event) => {
+      try {
+        handler(event);
+      } catch (error) {
+        reportFeatureError(target, `${label}でエラーが発生しました`, error);
+      }
+    });
+  };
+
   const escapeHtml = (value) => String(value ?? '').replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
   const renderQuestion = (q) => `<li><strong>${escapeHtml(q.questionId)} ${escapeHtml(q.title)}</strong><p>${escapeHtml(q.prompt)}</p><p class="exam-meta">解答形式: ${escapeHtml(q.answerType)} / 要求点: ${escapeHtml(q.requiredPoints)}</p></li>`;
   const renderExamBooklet = (exam) => {
@@ -48,6 +75,12 @@ document.addEventListener('DOMContentLoaded', () => {
       <article class="exam-page"><h3>選択問題A 空調・換気設備</h3><ol>${exam.electiveSections.hvac.map(renderQuestion).join('')}</ol></article>
       <article class="exam-page"><h3>選択問題B 給排水衛生設備</h3><ol>${exam.electiveSections.plumbing.map(renderQuestion).join('')}</ol></article>
       <article class="exam-page"><h3>選択問題C 電気設備</h3><ol>${exam.electiveSections.electrical.map(renderQuestion).join('')}</ol></article>`;
+  };
+
+  const ensureAnswerSheets = () => {
+    const exam = generatedExam || ensureExam();
+    generatedAnswerSheetSet = window.generateAnswerSheets({ exam, materials: generatedMaterials, drawings: generatedDrawings, options: { includeBlankPlanBackground: true } });
+    return generatedAnswerSheetSet;
   };
 
   const ensureExam = () => {
@@ -205,7 +238,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   if (generateButton && resultArea) {
-    generateButton.addEventListener('click', () => {
+    onSafe(generateButton, 'click', () => {
       generatedPlan = window.planHotelProject ? window.planHotelProject() : null;
       generatedBuilding = generateBuilding({ plan: generatedPlan });
       generatedEquipmentData = generateEquipment(generatedBuilding);
@@ -216,13 +249,14 @@ document.addEventListener('DOMContentLoaded', () => {
         generatedDrawings = window.generateDrawings ? window.generateDrawings({ plan: generatedPlan, building: generatedBuilding, equipment: generatedEquipmentData, materials: generatedMaterials }) : null;
       } catch (error) {
         generatedDrawings = null;
+        console.error('Drawing Generator生成でエラーが発生しました', error);
       }
       renderGenerationResult(generatedBuilding, generatedEquipmentData);
-    });
+    }, '模擬試験生成', resultArea);
   }
 
   if (jsonToggleButton && jsonPreviewCode) {
-    jsonToggleButton.addEventListener('click', () => {
+    onSafe(jsonToggleButton, 'click', () => {
       if (!generatedBuilding || !generatedEquipmentData) {
         jsonPreviewCode.textContent = '先に模擬試験生成を押してください';
         return;
@@ -236,7 +270,7 @@ document.addEventListener('DOMContentLoaded', () => {
         drawings: generatedDrawings,
         exam: generatedExam
       }, null, 2);
-    });
+    }, '生成JSON表示', jsonPreviewCode);
   }
 
   if (svgSampleButton && svgPreviewCanvas) {
@@ -267,7 +301,7 @@ document.addEventListener('DOMContentLoaded', () => {
         architecturalCanvas.innerHTML = currentArchitecturalSvg;
         architecturalMessage.textContent = '建築図SVGを表示しました。';
       } catch (error) {
-        architecturalMessage.textContent = `SVG生成に失敗しました。${error.message || ''}`;
+        reportFeatureError(architecturalMessage, '建築図SVG生成に失敗しました', error);
       }
     });
   }
@@ -304,7 +338,7 @@ document.addEventListener('DOMContentLoaded', () => {
         equipmentCanvas.innerHTML = currentEquipmentSvg;
         equipmentMessage.textContent = '設備図SVGを表示しました。';
       } catch (error) {
-        equipmentMessage.textContent = `SVG生成失敗: ${error.message || ''}`;
+        reportFeatureError(equipmentMessage, '設備図SVG生成に失敗しました', error);
       }
     });
   }
@@ -324,24 +358,49 @@ document.addEventListener('DOMContentLoaded', () => {
   if (examGenerateButton) {
     examGenerateButton.addEventListener('click', () => {
       try { ensureExam(); examMessage.textContent = '試験問題を生成しました。'; }
-      catch (error) { examMessage.textContent = `試験問題生成に失敗しました。${error.message || ''}`; }
+      catch (error) { reportFeatureError(examMessage, '試験問題生成に失敗しました', error); }
     });
   }
 
   if (examShowButton && examBooklet) {
     examShowButton.addEventListener('click', () => {
       try { const exam = generatedExam || ensureExam(); examBooklet.innerHTML = renderExamBooklet(exam); examMessage.textContent = '問題集を表示しました。'; }
-      catch (error) { examMessage.textContent = `問題集表示に失敗しました。${error.message || ''}`; }
+      catch (error) { reportFeatureError(examMessage, '問題集表示に失敗しました', error); }
     });
   }
 
   if (examJsonButton && examJsonCode) {
     examJsonButton.addEventListener('click', () => {
       try { const exam = generatedExam || ensureExam(); examJsonCode.textContent = JSON.stringify(exam, null, 2); examJsonPre.hidden = !examJsonPre.hidden; }
-      catch (error) { examMessage.textContent = `JSON表示に失敗しました。${error.message || ''}`; }
+      catch (error) { reportFeatureError(examMessage, 'JSON表示に失敗しました', error); }
     });
   }
 
   if (examPrintButton) examPrintButton.addEventListener('click', () => window.print());
+
+
+  onSafe(answerSheetGenerateButton, 'click', () => {
+    ensureAnswerSheets();
+    if (answerSheetMessage) answerSheetMessage.textContent = '答案用紙セットを生成しました。';
+  }, '答案用紙生成', answerSheetMessage);
+
+  if (answerSheetCanvas) {
+    onSafe(answerSheetShowButton, 'click', () => {
+      const set = generatedAnswerSheetSet || ensureAnswerSheets();
+      const sheetType = answerSheetSelect?.value || 'mandatoryPlanningSheet';
+      const mode = ['hvacSheet', 'plumbingSheet', 'electricalSheet'].includes(sheetType) ? 'svg' : 'html';
+      if (!window.answerSheetRenderer) throw new Error('Answer Sheet Rendererが読み込まれていません。');
+      currentAnswerSheetOutput = window.answerSheetRenderer.renderAnswerSheetSet(set, { sheetType, mode, showGrid: true, showQuestionTitles: true, includeBlankPlanBackground: true });
+      answerSheetCanvas.innerHTML = currentAnswerSheetOutput;
+      if (answerSheetMessage) answerSheetMessage.textContent = '答案用紙を表示しました。';
+    }, '答案用紙表示', answerSheetMessage);
+  }
+
+  onSafe(answerSheetSaveButton, 'click', () => {
+    if (!currentAnswerSheetOutput || !currentAnswerSheetOutput.trim().startsWith('<svg')) { if (answerSheetMessage) answerSheetMessage.textContent = 'SVG形式の答案用紙を先に表示してください。'; return; }
+    window.svgRenderer.downloadSvg(currentAnswerSheetOutput, 'answer-sheet-a3-landscape.svg');
+  }, '答案用紙SVG保存', answerSheetMessage);
+
+  if (answerSheetPrintButton) answerSheetPrintButton.addEventListener('click', () => window.print());
 
 });
