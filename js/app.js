@@ -12,6 +12,8 @@ document.addEventListener('DOMContentLoaded', () => {
   let generatedMaterials = null;
   let generatedDrawings = null;
   let generatedExam = null;
+  let generatedAnswerSheetSet = null;
+  let currentAnswerSheetOutput = null;
   let currentSvg = null;
   const svgSampleButton = document.querySelector('#svg-sample-button');
   const svgSaveButton = document.querySelector('#svg-save-button');
@@ -36,6 +38,14 @@ document.addEventListener('DOMContentLoaded', () => {
   const examJsonPre = document.querySelector('#exam-json-code');
   const examMessage = document.querySelector('#exam-preview-message');
 
+  const answerSheetSelect = document.querySelector('#answer-sheet-select');
+  const answerSheetGenerateButton = document.querySelector('#answer-sheet-generate-button');
+  const answerSheetShowButton = document.querySelector('#answer-sheet-show-button');
+  const answerSheetSaveButton = document.querySelector('#answer-sheet-save-button');
+  const answerSheetPrintButton = document.querySelector('#answer-sheet-print-button');
+  const answerSheetCanvas = document.querySelector('#answer-sheet-canvas');
+  const answerSheetMessage = document.querySelector('#answer-sheet-message');
+
   const escapeHtml = (value) => String(value ?? '').replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
   const renderQuestion = (q) => `<li><strong>${escapeHtml(q.questionId)} ${escapeHtml(q.title)}</strong><p>${escapeHtml(q.prompt)}</p><p class="exam-meta">解答形式: ${escapeHtml(q.answerType)} / 要求点: ${escapeHtml(q.requiredPoints)}</p></li>`;
   const renderExamBooklet = (exam) => {
@@ -48,6 +58,12 @@ document.addEventListener('DOMContentLoaded', () => {
       <article class="exam-page"><h3>選択問題A 空調・換気設備</h3><ol>${exam.electiveSections.hvac.map(renderQuestion).join('')}</ol></article>
       <article class="exam-page"><h3>選択問題B 給排水衛生設備</h3><ol>${exam.electiveSections.plumbing.map(renderQuestion).join('')}</ol></article>
       <article class="exam-page"><h3>選択問題C 電気設備</h3><ol>${exam.electiveSections.electrical.map(renderQuestion).join('')}</ol></article>`;
+  };
+
+  const ensureAnswerSheets = () => {
+    const exam = generatedExam || ensureExam();
+    generatedAnswerSheetSet = window.generateAnswerSheets({ exam, materials: generatedMaterials, drawings: generatedDrawings, options: { includeBlankPlanBackground: true } });
+    return generatedAnswerSheetSet;
   };
 
   const ensureExam = () => {
@@ -343,5 +359,35 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   if (examPrintButton) examPrintButton.addEventListener('click', () => window.print());
+
+
+  if (answerSheetGenerateButton) {
+    answerSheetGenerateButton.addEventListener('click', () => {
+      try { ensureAnswerSheets(); answerSheetMessage.textContent = '答案用紙セットを生成しました。'; }
+      catch (error) { answerSheetMessage.textContent = `答案用紙生成に失敗しました。${error.message || ''}`; }
+    });
+  }
+
+  if (answerSheetShowButton && answerSheetCanvas) {
+    answerSheetShowButton.addEventListener('click', () => {
+      try {
+        const set = generatedAnswerSheetSet || ensureAnswerSheets();
+        const sheetType = answerSheetSelect?.value || 'mandatoryPlanningSheet';
+        const mode = ['hvacSheet', 'plumbingSheet', 'electricalSheet'].includes(sheetType) ? 'svg' : 'html';
+        currentAnswerSheetOutput = window.answerSheetRenderer.renderAnswerSheetSet(set, { sheetType, mode, showGrid: true, showQuestionTitles: true, includeBlankPlanBackground: true });
+        answerSheetCanvas.innerHTML = currentAnswerSheetOutput;
+        answerSheetMessage.textContent = '答案用紙を表示しました。';
+      } catch (error) { answerSheetMessage.textContent = `答案用紙表示に失敗しました。${error.message || ''}`; }
+    });
+  }
+
+  if (answerSheetSaveButton) {
+    answerSheetSaveButton.addEventListener('click', () => {
+      if (!currentAnswerSheetOutput || !currentAnswerSheetOutput.trim().startsWith('<svg')) { answerSheetMessage.textContent = 'SVG形式の答案用紙を先に表示してください。'; return; }
+      window.svgRenderer.downloadSvg(currentAnswerSheetOutput, 'answer-sheet-a3-landscape.svg');
+    });
+  }
+
+  if (answerSheetPrintButton) answerSheetPrintButton.addEventListener('click', () => window.print());
 
 });
