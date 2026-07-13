@@ -1,4 +1,4 @@
-const { generateMaterial1 } = require('./material1Generator');
+const material1GeneratorApi = typeof require === 'function' ? require('./material1Generator') : (typeof window !== 'undefined' ? window : globalThis);
 
 function getBuildingRoot(buildingJson) {
   return buildingJson && buildingJson.building ? buildingJson.building : buildingJson;
@@ -142,7 +142,7 @@ function generateMaterials({ plan = null, building, equipment }) {
   if (!b) throw new Error('buildingが存在しません。');
   if (!e) throw new Error('equipmentが存在しません。');
 
-  const material1 = generateMaterial1({ plan, building, equipment });
+  const material1 = material1GeneratorApi.generateMaterial1({ plan, building, equipment });
   const material2 = generateMaterial2(b);
   const material3 = generateMaterial3(b);
   const material4 = generateMaterial4(b, material3);
@@ -201,4 +201,6 @@ function validateMaterials(materials) {
   return { isValid: errors.length === 0, errors, warnings, checks };
 }
 
-module.exports = { generateMaterials, validateMaterials };
+if (typeof module !== 'undefined') module.exports = { generateMaterials, validateMaterials };
+
+if (typeof window !== 'undefined') { window.generateMaterials = generateMaterials; window.validateMaterials = validateMaterials; }

@@ -251,3 +251,9 @@ npm test
 Step9-1では、Drawing Generatorが生成する図面JSONを編集可能なSVGに変換するための共通描画基盤を追加しました。`js/svg/svgRenderer.js`がA3横のSVGルート、`defs`、図枠、タイトル枠、メタデータ、レイヤーを生成し、`serializeSvg()`と`downloadSvg()`で文字列化と保存を行います。`js/svg/svgPrimitives.js`は線・矩形・柱・壁・扉・窓・寸法線などの基本図形、`js/svg/svgSymbols.js`は方位・階段・EV・設備スペース等の再利用記号を提供します。
 
 レイヤーは`Layer01_Architecture`、`Layer02_Grid`、`Layer03_Dimensions`、`Layer04_Equipment`、`Layer05_Text`、`Layer06_Answer`、`Layer07_Print`を標準とし、白図モードでは設備・解答レイヤーを除外できます。CAD風の白黒SVGを前提に、外壁0.50mm、内壁0.30mm、柱0.35mm、設備0.25mm、寸法0.15mm、通り芯0.13mm、補助線0.10mm、図枠0.50mmの線幅標準を定義しています。日本語フォントはYu Gothic、Hiragino Kaku Gothic ProN、sans-serifを使用します。
+
+## 建築図SVG Generator（Step9-2）
+
+Drawing Generatorが生成した配置図・各階平面図・白図JSONは、`js/svg/architecturalDrawingRenderer.js`から配置図用、平面図用、白図用のRendererへ振り分け、編集可能なA3横SVGとして出力できます。配置図は敷地境界、道路、建物外形、外構、インフラ引込位置、寸法、方位、凡例を白黒CAD風に描画します。平面図は通り芯、柱、壁、扉、窓、階段、EV、室名、面積、寸法、EPS/PS/DS、設備室名称を描画します。白図は同じ建築形状を使用し、設備機器・配管・ダクト・配線・模範解答を含めません。
+
+画面の「模擬試験生成」でBuilding/Equipment/Material/Drawing Generatorを順に実行した後、「建築図プレビュー」で図面を選択し「建築図を表示」を押します。「SVG保存」で表示中SVGを保存でき、「印刷」でA3横・余白なしの印刷レイアウトを開きます。

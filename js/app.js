@@ -9,10 +9,19 @@ document.addEventListener('DOMContentLoaded', () => {
   let generatedBuilding = null;
   let generatedEquipment = null;
   let currentSvg = null;
+  let generatedMaterials = null;
+  let generatedDrawings = null;
+  let currentArchitecturalSvg = null;
   const svgSampleButton = document.querySelector('#svg-sample-button');
   const svgSaveButton = document.querySelector('#svg-save-button');
   const svgPreviewCanvas = document.querySelector('#svg-preview-canvas');
   const svgPreviewMessage = document.querySelector('#svg-preview-message');
+  const architecturalSelect = document.querySelector('#architectural-drawing-select');
+  const architecturalShowButton = document.querySelector('#architectural-show-button');
+  const architecturalSaveButton = document.querySelector('#architectural-save-button');
+  const architecturalPrintButton = document.querySelector('#architectural-print-button');
+  const architecturalCanvas = document.querySelector('#architectural-preview-canvas');
+  const architecturalMessage = document.querySelector('#architectural-preview-message');
 
   const formatArea = (area) => {
     if (!area || typeof area.value === 'undefined') return '-';
@@ -125,9 +134,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (generateButton && resultArea) {
     generateButton.addEventListener('click', () => {
-      generatedBuilding = generateBuilding();
-      generatedEquipment = generateEquipment(generatedBuilding);
-      renderGenerationResult(generatedBuilding, generatedEquipment);
+      try {
+        const plan = typeof planHotelProject === 'function' ? planHotelProject() : null;
+        generatedBuilding = generateBuilding({ plan });
+        generatedEquipment = generateEquipment(generatedBuilding);
+        generatedMaterials = typeof generateMaterials === 'function' ? generateMaterials({ plan, building: generatedBuilding, equipment: generatedEquipment }) : null;
+        generatedDrawings = typeof generateDrawings === 'function' ? generateDrawings({ plan, building: generatedBuilding, equipment: generatedEquipment, materials: generatedMaterials }) : null;
+        renderGenerationResult(generatedBuilding, generatedEquipment);
+      } catch (error) {
+        resultArea.innerHTML = `<p class="generation-result__empty">模擬試験生成に失敗しました: ${error.message}</p>`;
+      }
     });
   }
 
@@ -140,7 +156,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
       jsonPreviewCode.textContent = JSON.stringify({
         building: generatedBuilding,
-        equipment: generatedEquipment
+        equipment: generatedEquipment,
+        materials: generatedMaterials,
+        drawings: generatedDrawings
       }, null, 2);
     });
   }
@@ -162,4 +180,48 @@ document.addEventListener('DOMContentLoaded', () => {
       window.svgRenderer.downloadSvg(currentSvg, 'svg-sample-a3-landscape.svg');
     });
   }
+
+  const selectArchitecturalDrawing = () => {
+    if (!generatedBuilding || !generatedEquipment) throw new Error('模擬試験が未生成です。先に「模擬試験生成」を押してください。');
+    if (!generatedDrawings) throw new Error('Drawing Generatorのデータがありません。');
+    const value = architecturalSelect ? architecturalSelect.value : 'site';
+    if (value === 'site') return { drawing: generatedDrawings.sitePlan, options: { type: 'sitePlan' }, filename: 'site-plan.svg' };
+    if (value === 'blank') {
+      const blank = (generatedDrawings.blankPlans || [])[0];
+      if (!blank) throw new Error('白図データが存在しません。');
+      return { drawing: blank, options: { type: 'blankPlan', blankMode: true }, filename: 'blank-plan.svg' };
+    }
+    const floor = (generatedDrawings.floorPlans || []).find((item) => item.floorId === value);
+    if (!floor) throw new Error(`選択した階（${value}）が存在しません。`);
+    if (!Array.isArray(floor.rooms) || floor.rooms.length === 0) throw new Error('室データが不足しています。');
+    return { drawing: floor, options: { type: 'floorPlan' }, filename: `floor-plan-${value}.svg` };
+  };
+
+  if (architecturalShowButton && architecturalCanvas) {
+    architecturalShowButton.addEventListener('click', () => {
+      try {
+        const selected = selectArchitecturalDrawing();
+        currentArchitecturalSvg = window.architecturalDrawingRenderer.renderArchitecturalDrawing(selected.drawing, selected.options);
+        architecturalCanvas.innerHTML = currentArchitecturalSvg;
+        architecturalMessage.textContent = '建築図SVGを表示しました。';
+      } catch (error) {
+        architecturalMessage.textContent = error.message || 'SVG生成に失敗しました。';
+      }
+    });
+  }
+
+  if (architecturalSaveButton) {
+    architecturalSaveButton.addEventListener('click', () => {
+      try {
+        if (!currentArchitecturalSvg) throw new Error('先に建築図を表示してください。');
+        const selected = selectArchitecturalDrawing();
+        window.svgRenderer.downloadSvg(currentArchitecturalSvg, selected.filename);
+      } catch (error) { architecturalMessage.textContent = error.message; }
+    });
+  }
+
+  if (architecturalPrintButton) {
+    architecturalPrintButton.addEventListener('click', () => window.print());
+  }
+
 });

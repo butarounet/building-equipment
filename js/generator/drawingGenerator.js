@@ -149,4 +149,6 @@ function validateDrawings(drawings, { plan = null, building, equipment, material
   return { isValid: errors.length === 0, errors, warnings, checks };
 }
 
-module.exports = { generateDrawings, validateDrawings };
+if (typeof module !== 'undefined') module.exports = { generateDrawings, validateDrawings };
+
+if (typeof window !== 'undefined') { window.generateDrawings = generateDrawings; window.validateDrawings = validateDrawings; }
