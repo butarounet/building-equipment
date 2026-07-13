@@ -338,7 +338,7 @@ document.addEventListener('DOMContentLoaded', () => {
       architecturalCanvas.innerHTML = currentArchitecturalSvg;
       const qualityResult = window.floorPlanQualityMetrics?.validateFloorPlanQuality ? window.floorPlanQualityMetrics.validateFloorPlanQuality({ floorPlan: selected.drawing, svg: currentArchitecturalSvg, building: generatedBuilding || {}, plan: generatedPlan || {} }) : null;
       const m = qualityResult?.metrics || {};
-      architecturalMessage.textContent = `${highQuality ? '高品質建築図SVGを表示しました。' : '建築図SVGを表示しました。'} 用紙占有率:${Math.round((m.paperUsageRatio || 0) * 100)}% / 生成客室:${m.generatedGuestRoomCount ?? '-'} / SVG客室:${m.svgGuestRoomCount ?? '-'} / 客室配置率:${Math.round((m.guestPlacementRatio || 0) * 100)}% / 内部利用率:${Math.round((m.buildingInteriorUsageRatio || 0) * 100)}% / 家具室:${m.furnishedGuestRoomCount ?? '-'} / 文字衝突:${m.textCollisionCount ?? '-'} / 未利用:${Math.round((m.unusedAreaRatio || 0) * 100)}%`;
+      architecturalMessage.textContent = `${highQuality ? '高品質建築図SVGを表示しました。' : '建築図SVGを表示しました。'} 用紙占有率:${Math.round((m.paperUsageRatio || 0) * 100)}% / 生成客室:${m.generatedGuestRoomCount ?? '-'} / SVG客室:${m.svgGuestRoomCount ?? '-'} / 客室配置率:${Math.round((m.guestPlacementRatio || 0) * 100)}% / 内部利用率:${Math.round((m.buildingInteriorUsageRatio || 0) * 100)}% / 家具室:${m.furnishedGuestRoomCount ?? '-'} / 空間重複:${m.spatialConflictCount ?? '-'} / 孤立室:${m.isolatedRoomCount ?? '-'} / 扉なし:${m.doorlessRoomCount ?? '-'} / 文字衝突:${m.textCollisionCount ?? '-'} / 未利用:${Math.round((m.unusedAreaRatio || 0) * 100)}%`;
     } catch (error) {
       architecturalMessage.textContent = `SVG生成に失敗しました。${error.message || ''}`;
     }

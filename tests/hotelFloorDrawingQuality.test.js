@@ -3,6 +3,7 @@ const assert = require('node:assert/strict');
 const { planHotelFloors } = require('../js/planner/hotelFloorPlanner');
 const { renderFloorPlan } = require('../js/svg/floorPlanRenderer');
 const { validateFloorPlanQuality } = require('../js/layout/floorPlanQualityMetrics');
+const { validateSpatialConflicts } = require('../js/layout/collisionDetector');
 
 function createSet() { return planHotelFloors({ building: { rooms: { guestRooms: 180 }, floors: { aboveGround: 8 }, hotelType: 'spa' } }); }
 
@@ -24,6 +25,10 @@ test('Step9-4C typical guest floor has exam-level density and drawing quality', 
   assert.ok(result.metrics.guestPlacementRatio >= 0.95);
   assert.ok(result.metrics.unusedAreaRatio <= 0.15);
   assert.ok(result.metrics.furnishedGuestRoomCount === result.metrics.guestRoomCount);
+  const spatial = validateSpatialConflicts(typ);
+  assert.equal(spatial.metrics.overlapCount, 0);
+  assert.equal(spatial.metrics.isolatedRoomCount, 0);
+  assert.equal(spatial.metrics.doorlessRoomCount, 0);
   assert.ok(typ.furniture.some((f) => f.type === 'bed'));
   assert.ok(typ.furniture.some((f) => f.type === 'bath'));
   assert.ok(typ.furniture.some((f) => f.type === 'basin'));
