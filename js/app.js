@@ -32,6 +32,10 @@ document.addEventListener('DOMContentLoaded', () => {
   const architecturalNoteToggle = document.querySelector('#architectural-note-toggle');
   const architecturalCollisionToggle = document.querySelector('#architectural-collision-toggle');
   const architecturalSheetToggle = document.querySelector('#architectural-sheet-toggle');
+  const architecturalFurnitureToggle = document.querySelector('#architectural-furniture-toggle');
+  const architecturalLegendToggle = document.querySelector('#architectural-legend-toggle');
+  const architecturalLinewidthToggle = document.querySelector('#architectural-linewidth-toggle');
+  const architecturalUsageToggle = document.querySelector('#architectural-usage-toggle');
   const architecturalPrintButton = document.querySelector('#architectural-print-button');
   const architecturalCanvas = document.querySelector('#architectural-preview-canvas');
   const architecturalMessage = document.querySelector('#architectural-preview-message');
@@ -41,6 +45,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const hotelZoningButton = document.querySelector('#hotel-zoning-button');
   const hotelFlowButton = document.querySelector('#hotel-flow-button');
   const hotelAdjacencyButton = document.querySelector('#hotel-adjacency-button');
+  const hotelQualityButton = document.querySelector('#hotel-quality-button');
 
 
   const examGenerateButton = document.querySelector('#exam-generate-button');
@@ -323,10 +328,16 @@ document.addEventListener('DOMContentLoaded', () => {
         showRoomAreas: architecturalAreaToggle?.checked !== false,
         showNotes: architecturalNoteToggle?.checked !== false,
         showCollisionBoxes: Boolean(architecturalCollisionToggle?.checked),
-        showSheetRegions: Boolean(architecturalSheetToggle?.checked)
+        showSheetRegions: Boolean(architecturalSheetToggle?.checked),
+        showFurniture: architecturalFurnitureToggle?.checked !== false,
+        showLegend: architecturalLegendToggle?.checked !== false,
+        showLineWidthPreview: Boolean(architecturalLinewidthToggle?.checked),
+        showPaperUsage: architecturalUsageToggle?.checked !== false,
+        showFireCompartment: document.querySelector('#hotel-fire-toggle')?.checked !== false
       });
       architecturalCanvas.innerHTML = currentArchitecturalSvg;
-      architecturalMessage.textContent = highQuality ? '高品質建築図SVGを表示しました。' : '建築図SVGを表示しました。';
+      const usage = currentArchitecturalSvg.match(/data-paper-usage-ratio=\"([^\"]+)/)?.[1];
+      architecturalMessage.textContent = `${highQuality ? '高品質建築図SVGを表示しました。' : '建築図SVGを表示しました。'}${usage ? ` 用紙占有率:${Math.round(Number(usage) * 100)}%` : ''}`;
     } catch (error) {
       architecturalMessage.textContent = `SVG生成に失敗しました。${error.message || ''}`;
     }
@@ -363,6 +374,16 @@ document.addEventListener('DOMContentLoaded', () => {
       const set = ensureHotelFloorPlanSet();
       const result = set.consistency.validation;
       architecturalMessage.textContent = `隣接評価表示: ${result.isValid ? 'OK' : result.errors.join('、')}`;
+    });
+  }
+
+  if (hotelQualityButton) {
+    hotelQualityButton.addEventListener('click', () => {
+      const set = ensureHotelFloorPlanSet();
+      const floor = set.floors.find((item) => item.floorId === (architecturalSelect?.value || 'TYP')) || set.floors.find((item) => item.floorId === 'TYP');
+      const svg = currentArchitecturalSvg || (window.floorPlanRenderer ? window.floorPlanRenderer.renderFloorPlan(floor, { highQuality: true }) : '');
+      const result = window.floorPlanQualityMetrics?.validateFloorPlanQuality ? window.floorPlanQualityMetrics.validateFloorPlanQuality({ floorPlan: floor, svg, building: generatedBuilding || {}, plan: generatedPlan || {} }) : { isValid: false, errors: ['品質検査器が未読込です'], metrics: {} };
+      architecturalMessage.textContent = `品質チェック結果: ${result.isValid ? 'OK' : result.errors.join('、')} / 指標 ${JSON.stringify(result.metrics)}`;
     });
   }
 
