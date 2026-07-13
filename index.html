@@ -27,6 +27,7 @@
       <li><a href="#svg-preview">SVG基盤プレビュー</a></li>
       <li><a href="#architectural-preview">建築図プレビュー</a></li>
       <li><a href="#equipment-preview">設備図プレビュー</a></li>
+      <li><a href="#exam-preview">試験問題プレビュー</a></li>
       <li><a href="#answer-sheet">解答用紙</a></li>
       <li><a href="#print">印刷</a></li>
     </ul>
@@ -166,6 +167,25 @@
       <div class="svg-preview__canvas equipment-print-target" id="equipment-preview-canvas" aria-label="設備図プレビュー"></div>
     </section>
 
+
+    <section class="card exam-preview" id="exam-preview">
+      <div class="section-heading">
+        <div>
+          <h2>試験問題プレビュー</h2>
+          <p>PlannerからDrawing Generatorまでの生成結果をもとに、建築設備士第二次試験（設計製図）形式の問題集を生成します。</p>
+        </div>
+        <div class="generator-actions no-print">
+          <button class="generate-button" type="button" id="exam-generate-button">試験問題を生成</button>
+          <button class="json-toggle-button" type="button" id="exam-show-button">問題集を表示</button>
+          <button class="json-toggle-button" type="button" id="exam-json-button">JSON表示</button>
+          <button class="print-button" type="button" id="exam-print-button">印刷</button>
+        </div>
+      </div>
+      <p class="svg-preview__message" id="exam-preview-message" aria-live="polite">「試験問題を生成」ボタンを押すと問題集データを作成します。</p>
+      <div class="exam-booklet" id="exam-booklet" aria-label="試験問題プレビュー"></div>
+      <pre class="json-preview__code" id="exam-json-code" hidden><code>試験問題JSONはここに表示されます。</code></pre>
+    </section>
+
     <section class="card answer-sheet" id="answer-sheet">
       <h2>解答用紙</h2>
       <p>記述欄や図面欄を配置するための印刷領域です。ブラウザの印刷機能でA4縦に出力できます。</p>
@@ -188,9 +208,13 @@
     <small>&copy; 2026 建築設備士 第二次試験 模擬試験</small>
   </footer>
 
+  <script src="js/planner/buildingPlanner.js" defer></script>
   <script src="js/generator/buildingGenerator.js" defer></script>
   <script src="js/generator/equipmentGenerator.js" defer></script>
+  <script src="js/generator/material1Generator.js" defer></script>
+  <script src="js/generator/materialGenerator.js" defer></script>
   <script src="js/generator/drawingGenerator.js" defer></script>
+  <script src="js/generator/examGenerator.js" defer></script>
   <script src="js/svg/svgPrimitives.js" defer></script>
   <script src="js/svg/svgSymbols.js" defer></script>
   <script src="js/svg/svgRenderer.js" defer></script>
