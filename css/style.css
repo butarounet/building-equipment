@@ -706,3 +706,8 @@ h2 {
 @media (max-width: 900px) {
   .architectural-preview__buttons { justify-content: flex-start; margin-left: 0; }
 }
+
+/* Step9-4C: A3 high-density CAD preview controls and SVG readability. */
+.architectural-preview__controls { align-items: flex-start; }
+.architectural-preview__checks label { flex: 0 0 auto; line-height: 1.6; }
+.svg-preview__canvas svg[data-paper-usage-ratio] { max-width: 100%; height: auto; border: 1px solid #d8dee8; background: #fff; }

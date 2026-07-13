@@ -125,10 +125,14 @@
           </div>
           <div class="architectural-preview__checks" aria-label="表示切替">
           <label><input type="checkbox" id="architectural-hq-toggle"> 高品質モード</label>
+          <label><input type="checkbox" id="architectural-furniture-toggle" checked> 家具</label>
           <label><input type="checkbox" id="architectural-grid-toggle" checked> 通り芯</label>
           <label><input type="checkbox" id="architectural-dim-toggle" checked> 寸法</label>
           <label><input type="checkbox" id="architectural-area-toggle" checked> 室面積</label>
           <label><input type="checkbox" id="architectural-note-toggle" checked> 注記</label>
+          <label><input type="checkbox" id="architectural-legend-toggle" checked> 凡例</label>
+          <label><input type="checkbox" id="architectural-linewidth-toggle"> 線幅プレビュー</label>
+          <label><input type="checkbox" id="architectural-usage-toggle" checked> 用紙占有率表示</label>
           <label><input type="checkbox" id="hotel-room-toggle" checked> 室番号</label>
           <label><input type="checkbox" id="hotel-shaft-toggle" checked> シャフト</label>
           <label><input type="checkbox" id="hotel-fire-toggle" checked> 防火区画</label>
@@ -146,6 +150,7 @@
           <button class="json-toggle-button" type="button" id="hotel-zoning-button">ゾーニング表示</button>
           <button class="json-toggle-button" type="button" id="hotel-flow-button">動線表示</button>
           <button class="json-toggle-button" type="button" id="hotel-adjacency-button">隣接評価表示</button>
+          <button class="json-toggle-button" type="button" id="hotel-quality-button">品質チェック結果を表示</button>
           <button class="print-button" type="button" id="architectural-print-button">印刷</button>
           </div>
         </div>
@@ -265,6 +270,7 @@
   <script src="js/layout/annotationLayoutEngine.js" defer></script>
   <script src="js/layout/drawingQualityChecker.js" defer></script>
   <script src="js/svg/sitePlanRenderer.js" defer></script>
+  <script src="js/svg/architecturalPatterns.js" defer></script>
   <script src="js/svg/floorPlanRenderer.js" defer></script>
   <script src="js/svg/blankPlanRenderer.js" defer></script>
   <script src="js/planner/hotelAdjacencyRules.js" defer></script>
@@ -273,6 +279,9 @@
   <script src="js/planner/hotelRoomModulePlanner.js" defer></script>
   <script src="js/planner/hotelServiceFlowPlanner.js" defer></script>
   <script src="js/layout/hotelRoomGeometryEngine.js" defer></script>
+  <script src="js/layout/furnitureLayoutEngine.js" defer></script>
+  <script src="js/layout/hotelDimensionEngine.js" defer></script>
+  <script src="js/layout/floorPlanQualityMetrics.js" defer></script>
   <script src="js/layout/hotelCirculationEngine.js" defer></script>
   <script src="js/layout/hotelFloorLayoutEngine.js" defer></script>
   <script src="js/planner/hotelFloorPlanner.js" defer></script>
