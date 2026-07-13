@@ -133,3 +133,9 @@ SVG patternとしてRC耐震壁、設備スペース、吹抜け/屋外、水回
 品質指標はpaperUsageRatio、roomUsageRatio、guestRoomCount、furnitureCount、dimensionCount、shaftCount、coreAreaRatio、textCollisionCount、unusedAreaRatio、egressRouteCountを算定し、validateFloorPlanQualityでA3占有率、室利用率、客室数、家具、寸法、線幅、防火区画、避難動線、凡例、タイトル枠、方位・縮尺、文字衝突を検査します。
 
 プレビューでは「ホテル平面計画を生成」後に「高品質建築図を表示」を押し、家具、室面積、室番号、通り芯、寸法、シャフト、防火区画、避難方向、凡例、注記、線幅プレビュー、用紙占有率表示を切り替えます。SVG保存ボタンで編集可能なSVGを書き出し、印刷ボタンでA3横相当の白黒CAD風図面を確認します。
+
+## Step9-4D ゾーニング・廊下・コア・動線先行決定エンジン
+
+Step9-4Dでは、設備計画へ入る前に建築基本設計図の骨格を確定する平面計画エンジン仕様を追加した。建物用途、階数、延床面積、各室一覧、要求室面積、建築条件、法規条件、設備条件を入力し、パブリック、セミパブリック、バックヤード、管理、設備の5ゾーン分類、EV・階段・EPS・PS・DS・トイレ・シャフトのコア配置、廊下グラフ、利用者・職員・搬入・搬出・ごみ搬出・設備保守・非常時避難の動線解析、設備スペース配置、100点満点スコアリングを行う設計仕様である。
+
+出力はMarkdown仕様書、構造化JSON、ゾーニング図・動線図・コア配置図・設備スペース配置図のASCII表現、改善点一覧、最終評価、チェックリストを想定する。実装時は `architecturalSkeletonPlanner`、`zoningClassifier`、`corePlacementEngine`、`corridorGraphEngine`、`flowAnalysisEngine`、`equipmentSpacePlacementEngine`、`planningSkeletonScorer` に分割し、後続のEquipment Generator、Drawing Generator、Quality Checkerが同じ平面骨格を参照できるようにする。
