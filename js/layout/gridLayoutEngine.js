@@ -1,0 +1,12 @@
+(function(root){
+ const p=root.svgPrimitives||(typeof require==='function'?require('../svg/svgPrimitives'):{});
+ const n=(v,d=0)=>Number.isFinite(Number(v))?Number(v):d; const eid=(v)=>String(v).replace(/[^A-Za-z0-9_-]/g,'-');
+ function createGridLayout({xGrids=[],yGrids=[],columnSize=800}={}){return {xGrids:xGrids.length?xGrids:[0,7200,14400,21600,28800,36000,43200,50400].map((coordinate,i)=>({id:`X${i+1}`,coordinate})),yGrids:yGrids.length?yGrids:[0,7200,14400,21600,28800,36000].map((coordinate,i)=>({id:`Y${i+1}`,coordinate})),columnSize};}
+ function generateColumns(grid){return grid.xGrids.flatMap(x=>grid.yGrids.map(y=>({id:`${x.id}-${y.id}`,x:x.coordinate,y:y.coordinate,width:grid.columnSize,height:grid.columnSize,gridX:x.id,gridY:y.id})));}
+ function renderGridLayout(grid,cs,{showDimensions=true}={}){const out=[];const minX=grid.xGrids[0].coordinate,maxX=grid.xGrids.at(-1).coordinate,minY=grid.yGrids[0].coordinate,maxY=grid.yGrids.at(-1).coordinate;
+  grid.xGrids.forEach(g=>{const x=cs.x(g.coordinate);out.push(p.drawGridLine({id:`grid-${eid(g.id).toLowerCase()}`,x1:x,y1:cs.y(minY)-12,x2:x,y2:cs.y(maxY)+12}));['top','bottom'].forEach(pos=>out.push(p.drawCircle({id:`grid-symbol-${eid(g.id)}-${pos}`,cx:x,cy:pos==='top'?cs.y(minY)-17:cs.y(maxY)+17,r:4,fill:'#fff',className:'line-thin'}),p.drawText({id:`grid-label-${eid(g.id)}-${pos}`,x,y:pos==='top'?cs.y(minY)-17:cs.y(maxY)+17,text:g.id,className:'text-dimension',fontSize:2.5})));});
+  grid.yGrids.forEach(g=>{const y=cs.y(g.coordinate);out.push(p.drawGridLine({id:`grid-${eid(g.id).toLowerCase()}`,x1:cs.x(minX)-12,y1:y,x2:cs.x(maxX)+12,y2:y}));['left','right'].forEach(pos=>out.push(p.drawCircle({id:`grid-symbol-${eid(g.id)}-${pos}`,cx:pos==='left'?cs.x(minX)-17:cs.x(maxX)+17,cy:y,r:4,fill:'#fff',className:'line-thin'}),p.drawText({id:`grid-label-${eid(g.id)}-${pos}`,x:pos==='left'?cs.x(minX)-17:cs.x(maxX)+17,y,text:g.id,className:'text-dimension',fontSize:2.5})));});
+  if(showDimensions){grid.xGrids.slice(1).forEach((g,i)=>out.push(p.drawDimensionLine({id:`grid-dim-x-${i+1}`,x:cs.x(grid.xGrids[i].coordinate),y:cs.y(maxY)+26,width:cs.l(g.coordinate-grid.xGrids[i].coordinate),text:String(g.coordinate-grid.xGrids[i].coordinate)})));out.push(p.drawDimensionLine({id:'overall-dim-x',x:cs.x(minX),y:cs.y(maxY)+36,width:cs.l(maxX-minX),text:String(maxX-minX)}));}
+  return out.join('');}
+ const api={createGridLayout,generateColumns,renderGridLayout}; if(typeof module!=='undefined')module.exports=api; root.gridLayoutEngine=api;
+})(typeof window!=='undefined'?window:globalThis);

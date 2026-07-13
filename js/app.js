@@ -24,6 +24,14 @@ document.addEventListener('DOMContentLoaded', () => {
   const architecturalSelect = document.querySelector('#architectural-drawing-select');
   const architecturalShowButton = document.querySelector('#architectural-show-button');
   const architecturalSaveButton = document.querySelector('#architectural-save-button');
+  const architecturalHqShowButton = document.querySelector('#architectural-hq-show-button');
+  const architecturalHqToggle = document.querySelector('#architectural-hq-toggle');
+  const architecturalGridToggle = document.querySelector('#architectural-grid-toggle');
+  const architecturalDimToggle = document.querySelector('#architectural-dim-toggle');
+  const architecturalAreaToggle = document.querySelector('#architectural-area-toggle');
+  const architecturalNoteToggle = document.querySelector('#architectural-note-toggle');
+  const architecturalCollisionToggle = document.querySelector('#architectural-collision-toggle');
+  const architecturalSheetToggle = document.querySelector('#architectural-sheet-toggle');
   const architecturalPrintButton = document.querySelector('#architectural-print-button');
   const architecturalCanvas = document.querySelector('#architectural-preview-canvas');
   const architecturalMessage = document.querySelector('#architectural-preview-message');
@@ -279,20 +287,42 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  if (architecturalShowButton && architecturalCanvas) {
-    architecturalShowButton.addEventListener('click', () => {
-      try {
-        const selected = findArchitecturalDrawing(architecturalSelect?.value || 'site');
-        if (selected.error) { architecturalMessage.textContent = selected.error; return; }
-        if (!selected.drawing) { architecturalMessage.textContent = '室データが不足しています。'; return; }
-        currentArchitecturalSvg = window.architecturalDrawingRenderer.renderArchitecturalDrawing(selected.drawing, { kind: selected.kind });
-        architecturalCanvas.innerHTML = currentArchitecturalSvg;
-        architecturalMessage.textContent = '建築図SVGを表示しました。';
-      } catch (error) {
-        architecturalMessage.textContent = `SVG生成に失敗しました。${error.message || ''}`;
+  const renderArchitecturalPreview = (forceHighQuality = false) => {
+    try {
+      let selected = findArchitecturalDrawing(architecturalSelect?.value || 'site');
+      const highQuality = forceHighQuality || Boolean(architecturalHqToggle?.checked);
+      if (selected.error && highQuality && window.floorTemplateEngine) {
+        const value = architecturalSelect?.value || 'site';
+        const floorType = value === 'site' ? null : value === '1' ? '1' : value === '2' ? '2' : value === '3' ? '3' : value === 'B1' ? 'basement' : value === 'RF' ? 'rooftop' : value === 'PH' ? 'penthouse' : 'typicalGuestFloor';
+        selected = value === 'site' ? { drawing: {}, kind: 'site' } : { drawing: window.floorTemplateEngine.createFloorTemplate(floorType), kind: 'floor' };
       }
-    });
+      if (selected.error) { architecturalMessage.textContent = selected.error; return; }
+      if (!selected.drawing) { architecturalMessage.textContent = '室データが不足しています。'; return; }
+      currentArchitecturalSvg = window.architecturalDrawingRenderer.renderArchitecturalDrawing(selected.drawing, {
+        kind: selected.kind,
+        highQuality,
+        showGrid: architecturalGridToggle?.checked !== false,
+        showDimensions: architecturalDimToggle?.checked !== false,
+        showRoomAreas: architecturalAreaToggle?.checked !== false,
+        showNotes: architecturalNoteToggle?.checked !== false,
+        showCollisionBoxes: Boolean(architecturalCollisionToggle?.checked),
+        showSheetRegions: Boolean(architecturalSheetToggle?.checked)
+      });
+      architecturalCanvas.innerHTML = currentArchitecturalSvg;
+      architecturalMessage.textContent = highQuality ? '高品質建築図SVGを表示しました。' : '建築図SVGを表示しました。';
+    } catch (error) {
+      architecturalMessage.textContent = `SVG生成に失敗しました。${error.message || ''}`;
+    }
+  };
+
+  if (architecturalShowButton && architecturalCanvas) {
+    architecturalShowButton.addEventListener('click', () => renderArchitecturalPreview(false));
   }
+
+  if (architecturalHqShowButton && architecturalCanvas) {
+    architecturalHqShowButton.addEventListener('click', () => renderArchitecturalPreview(true));
+  }
+
 
   if (architecturalSaveButton) {
     architecturalSaveButton.addEventListener('click', () => {

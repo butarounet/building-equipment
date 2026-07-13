@@ -1,0 +1,8 @@
+(function(root){
+ const box=(e)=>e.bbox||{x:e.x||0,y:e.y||0,width:e.width||((String(e.text||'').length||1)*(e.fontSize||3)*.6),height:e.height||(e.fontSize||3)};
+ const hit=(a,b)=>{a=box(a);b=box(b);return a.x<b.x+b.width&&a.x+a.width>b.x&&a.y<b.y+b.height&&a.y+a.height>b.y;};
+ function detectCollisions(elements=[]){const collisions=[];for(let i=0;i<elements.length;i++)for(let j=i+1;j<elements.length;j++)if(hit(elements[i],elements[j]))collisions.push({a:elements[i].id,b:elements[j].id,type:`${elements[i].type||'element'}-${elements[j].type||'element'}`});return {collisions,warnings:collisions.map(c=>`collision: ${c.a}/${c.b}`)};}
+ function resolveTextCollisions(elements=[]){const out=elements.map(e=>({...e}));const warnings=[];for(let pass=0;pass<8;pass++){let moved=false;for(let i=0;i<out.length;i++)for(let j=i+1;j<out.length;j++)if((out[i].type==='text'||out[j].type==='text')&&hit(out[i],out[j])){const t=out[j].type==='text'?out[j]:out[i];t.y=(t.y||0)+(t.fontSize||3)+1;moved=true;}} const unresolved=detectCollisions(out).collisions.filter(c=>c.type.includes('text')); unresolved.forEach(c=>warnings.push(`unresolved text collision: ${c.a}/${c.b}`)); return {elements:out,warnings};}
+ function validateSheetLayout(sheet={}){const elements=Object.entries(sheet.regions||{}).filter(([,v])=>v&&v.width).map(([id,v])=>({id,type:id,...v}));const r=detectCollisions(elements);const warnings=[...(sheet.warnings||[]),...r.warnings];return {valid:warnings.length===0,warnings,collisions:r.collisions};}
+ const api={detectCollisions,resolveTextCollisions,validateSheetLayout}; if(typeof module!=='undefined')module.exports=api; root.collisionDetector=api;
+})(typeof window!=='undefined'?window:globalThis);
