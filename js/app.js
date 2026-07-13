@@ -23,6 +23,16 @@ document.addEventListener('DOMContentLoaded', () => {
   const architecturalMessage = document.querySelector('#architectural-preview-message');
   let currentArchitecturalSvg = null;
 
+  const equipmentDisciplineSelect = document.querySelector('#equipment-discipline-select');
+  const equipmentFloorSelect = document.querySelector('#equipment-floor-select');
+  const equipmentModeSelect = document.querySelector('#equipment-mode-select');
+  const equipmentShowButton = document.querySelector('#equipment-show-button');
+  const equipmentSaveButton = document.querySelector('#equipment-save-button');
+  const equipmentPrintButton = document.querySelector('#equipment-print-button');
+  const equipmentCanvas = document.querySelector('#equipment-preview-canvas');
+  const equipmentMessage = document.querySelector('#equipment-preview-message');
+  let currentEquipmentSvg = null;
+
   const ensureDrawings = () => {
     if (!generatedBuilding) return { error: '模擬試験が未生成です。先に「模擬試験生成」を押してください。' };
     if (!generatedDrawings) {
@@ -224,6 +234,43 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (architecturalPrintButton) {
     architecturalPrintButton.addEventListener('click', () => window.print());
+  }
+
+  if (equipmentShowButton && equipmentCanvas) {
+    equipmentShowButton.addEventListener('click', () => {
+      try {
+        if (!generatedBuilding) { equipmentMessage.textContent = '模擬試験未生成です。先に「模擬試験生成」を押してください。'; return; }
+        if (!generatedEquipmentData) { equipmentMessage.textContent = '設備データがありません。'; return; }
+        const ready = ensureDrawings();
+        if (ready.error) { equipmentMessage.textContent = ready.error; return; }
+        const floorId = equipmentFloorSelect?.value || '1';
+        const drawing = (ready.drawings.floorPlans || []).find((floor) => String(floor.floorId) === floorId);
+        if (!drawing) { equipmentMessage.textContent = '選択階がありません。'; return; }
+        const discipline = equipmentDisciplineSelect?.value || 'hvac';
+        const screenColorMode = (equipmentModeSelect?.value || 'mono') === 'color';
+        currentEquipmentSvg = window.equipmentDrawingRenderer.renderEquipmentDrawing({
+          drawing,
+          equipment: generatedEquipmentData,
+          discipline,
+          options: { monochrome: !screenColorMode, screenColorMode }
+        });
+        equipmentCanvas.innerHTML = currentEquipmentSvg;
+        equipmentMessage.textContent = '設備図SVGを表示しました。';
+      } catch (error) {
+        equipmentMessage.textContent = `SVG生成失敗: ${error.message || ''}`;
+      }
+    });
+  }
+
+  if (equipmentSaveButton) {
+    equipmentSaveButton.addEventListener('click', () => {
+      if (!currentEquipmentSvg) { equipmentMessage.textContent = '先に設備図を表示してください。'; return; }
+      window.svgRenderer.downloadSvg(currentEquipmentSvg, 'equipment-drawing-a3-landscape.svg');
+    });
+  }
+
+  if (equipmentPrintButton) {
+    equipmentPrintButton.addEventListener('click', () => window.print());
   }
 
 });
