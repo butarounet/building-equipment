@@ -251,3 +251,13 @@ npm test
 Step9-1では、Drawing Generatorが生成する図面JSONを編集可能なSVGに変換するための共通描画基盤を追加しました。`js/svg/svgRenderer.js`がA3横のSVGルート、`defs`、図枠、タイトル枠、メタデータ、レイヤーを生成し、`serializeSvg()`と`downloadSvg()`で文字列化と保存を行います。`js/svg/svgPrimitives.js`は線・矩形・柱・壁・扉・窓・寸法線などの基本図形、`js/svg/svgSymbols.js`は方位・階段・EV・設備スペース等の再利用記号を提供します。
 
 レイヤーは`Layer01_Architecture`、`Layer02_Grid`、`Layer03_Dimensions`、`Layer04_Equipment`、`Layer05_Text`、`Layer06_Answer`、`Layer07_Print`を標準とし、白図モードでは設備・解答レイヤーを除外できます。CAD風の白黒SVGを前提に、外壁0.50mm、内壁0.30mm、柱0.35mm、設備0.25mm、寸法0.15mm、通り芯0.13mm、補助線0.10mm、図枠0.50mmの線幅標準を定義しています。日本語フォントはYu Gothic、Hiragino Kaku Gothic ProN、sans-serifを使用します。
+
+## 建築図SVG Generator
+
+Step9-2では、Drawing Generatorが出力する配置図・各階平面図・白図JSONを、Step9-1のSVG基盤レイヤーに差し込む建築図Rendererを追加しました。`js/svg/architecturalDrawingRenderer.js`が図面種別を判定し、配置図は`sitePlanRenderer`、平面図は`floorPlanRenderer`、白図は`blankPlanRenderer`へ委譲します。
+
+* 配置図はA3横、標準縮尺1/500で、敷地境界、道路、道路幅員、方位、建物外形、外構、各種引込位置、縮尺、凡例を白黒CAD風SVGで描画します。
+* 平面図はA3横、標準縮尺1/200で、通り芯、柱、壁、扉、窓、階段、EV、室名、室面積、寸法、EPS/PS/DS、設備室名称、方位、縮尺、凡例を描画します。設備機器、配管、ダクト、配線、模範解答は描画しません。
+* 白図は平面図と同じ建築形状を使い、設備記号・設備系統名称・配管・ダクト・配線・模範解答を除外します。
+
+プレビューは画面の「建築図プレビュー」で図面を選択し、「建築図を表示」を押します。表示後、「SVG保存」で編集可能なSVGを保存できます。「印刷」はA3横、余白0、白背景で図面のみを印刷します。

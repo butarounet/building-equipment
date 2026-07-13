@@ -7,12 +7,43 @@ document.addEventListener('DOMContentLoaded', () => {
   const resultArea = document.querySelector('#generation-result');
   const jsonPreviewCode = document.querySelector('#json-preview-code code');
   let generatedBuilding = null;
-  let generatedEquipment = null;
+  let generatedEquipmentData = null;
+  let generatedDrawings = null;
   let currentSvg = null;
   const svgSampleButton = document.querySelector('#svg-sample-button');
   const svgSaveButton = document.querySelector('#svg-save-button');
   const svgPreviewCanvas = document.querySelector('#svg-preview-canvas');
   const svgPreviewMessage = document.querySelector('#svg-preview-message');
+
+  const architecturalSelect = document.querySelector('#architectural-drawing-select');
+  const architecturalShowButton = document.querySelector('#architectural-show-button');
+  const architecturalSaveButton = document.querySelector('#architectural-save-button');
+  const architecturalPrintButton = document.querySelector('#architectural-print-button');
+  const architecturalCanvas = document.querySelector('#architectural-preview-canvas');
+  const architecturalMessage = document.querySelector('#architectural-preview-message');
+  let currentArchitecturalSvg = null;
+
+  const ensureDrawings = () => {
+    if (!generatedBuilding) return { error: '模擬試験が未生成です。先に「模擬試験生成」を押してください。' };
+    if (!generatedDrawings) {
+      try {
+        generatedDrawings = window.generateDrawings ? window.generateDrawings({ building: generatedBuilding, equipment: generatedEquipmentData }) : null;
+      } catch (error) {
+        return { error: `Drawing Generatorのデータがありません。${error.message || ''}` };
+      }
+    }
+    if (!generatedDrawings) return { error: 'Drawing Generatorのデータがありません。' };
+    return { drawings: generatedDrawings };
+  };
+
+  const findArchitecturalDrawing = (value) => {
+    const ready = ensureDrawings();
+    if (ready.error) return ready;
+    if (value === 'site') return { drawing: ready.drawings.sitePlan, kind: 'site' };
+    if (value === 'blank') return { drawing: ready.drawings.blankPlans?.[0], kind: 'blank' };
+    const drawing = (ready.drawings.floorPlans || []).find((floor) => String(floor.floorId) === value);
+    return drawing ? { drawing, kind: 'floor' } : { error: '選択した階が存在しません。' };
+  };
 
   const formatArea = (area) => {
     if (!area || typeof area.value === 'undefined') return '-';
@@ -126,21 +157,27 @@ document.addEventListener('DOMContentLoaded', () => {
   if (generateButton && resultArea) {
     generateButton.addEventListener('click', () => {
       generatedBuilding = generateBuilding();
-      generatedEquipment = generateEquipment(generatedBuilding);
-      renderGenerationResult(generatedBuilding, generatedEquipment);
+      generatedEquipmentData = generateEquipment(generatedBuilding);
+      try {
+        generatedDrawings = window.generateDrawings ? window.generateDrawings({ building: generatedBuilding, equipment: generatedEquipmentData }) : null;
+      } catch (error) {
+        generatedDrawings = null;
+      }
+      renderGenerationResult(generatedBuilding, generatedEquipmentData);
     });
   }
 
   if (jsonToggleButton && jsonPreviewCode) {
     jsonToggleButton.addEventListener('click', () => {
-      if (!generatedBuilding || !generatedEquipment) {
+      if (!generatedBuilding || !generatedEquipmentData) {
         jsonPreviewCode.textContent = '先に模擬試験生成を押してください';
         return;
       }
 
       jsonPreviewCode.textContent = JSON.stringify({
         building: generatedBuilding,
-        equipment: generatedEquipment
+        equipment: generatedEquipmentData,
+        drawings: generatedDrawings
       }, null, 2);
     });
   }
@@ -162,4 +199,31 @@ document.addEventListener('DOMContentLoaded', () => {
       window.svgRenderer.downloadSvg(currentSvg, 'svg-sample-a3-landscape.svg');
     });
   }
+
+  if (architecturalShowButton && architecturalCanvas) {
+    architecturalShowButton.addEventListener('click', () => {
+      try {
+        const selected = findArchitecturalDrawing(architecturalSelect?.value || 'site');
+        if (selected.error) { architecturalMessage.textContent = selected.error; return; }
+        if (!selected.drawing) { architecturalMessage.textContent = '室データが不足しています。'; return; }
+        currentArchitecturalSvg = window.architecturalDrawingRenderer.renderArchitecturalDrawing(selected.drawing, { kind: selected.kind });
+        architecturalCanvas.innerHTML = currentArchitecturalSvg;
+        architecturalMessage.textContent = '建築図SVGを表示しました。';
+      } catch (error) {
+        architecturalMessage.textContent = `SVG生成に失敗しました。${error.message || ''}`;
+      }
+    });
+  }
+
+  if (architecturalSaveButton) {
+    architecturalSaveButton.addEventListener('click', () => {
+      if (!currentArchitecturalSvg) { architecturalMessage.textContent = '先に建築図を表示してください。'; return; }
+      window.svgRenderer.downloadSvg(currentArchitecturalSvg, 'architectural-drawing-a3-landscape.svg');
+    });
+  }
+
+  if (architecturalPrintButton) {
+    architecturalPrintButton.addEventListener('click', () => window.print());
+  }
+
 });

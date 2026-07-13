@@ -544,3 +544,48 @@ h2 {
     box-shadow: none;
   }
 }
+
+@page {
+  size: A3 landscape;
+  margin: 0;
+}
+
+.svg-preview__canvas svg {
+  max-width: 100%;
+  height: auto;
+  background: #fff;
+}
+
+@media print {
+  body {
+    background: #fff;
+  }
+
+  .no-print,
+  .site-header,
+  .global-menu,
+  .site-footer,
+  .generator-actions,
+  .svg-preview__message {
+    display: none !important;
+  }
+
+  .page-shell,
+  .card,
+  .svg-preview__canvas {
+    margin: 0 !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+    border: 0 !important;
+    background: #fff !important;
+  }
+
+  .architectural-print-target svg {
+    width: 420mm;
+    height: 297mm;
+    max-width: none;
+    max-height: none;
+    display: block;
+    color: #000;
+  }
+}
