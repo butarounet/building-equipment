@@ -1,6 +1,10 @@
 (function (root) {
   const p = root.svgPrimitives || (typeof require === 'function' ? require('./svgPrimitives') : {});
   const base = root.svgRenderer || (typeof require === 'function' ? require('./svgRenderer') : {});
+  const coord = root.drawingCoordinateSystem || (typeof require === 'function' ? require('../layout/drawingCoordinateSystem') : {});
+  const gridEngine = root.gridLayoutEngine || (typeof require === 'function' ? require('../layout/gridLayoutEngine') : {});
+  const floorTemplates = root.floorTemplateEngine || (typeof require === 'function' ? require('../layout/floorTemplateEngine') : {});
+  const annotations = root.annotationLayoutEngine || (typeof require === 'function' ? require('../layout/annotationLayoutEngine') : {});
   const SHEET = { width: 420, height: 297, margin: 20 };
   const safe = (v, d = 0) => Number.isFinite(Number(v)) ? Number(v) : d;
   const escId = (v) => String(v ?? 'item').replace(/[^A-Za-z0-9_-]/g, '-');
@@ -37,7 +41,7 @@
   }
   function renderFloorPlan(floorPlan = {}, options = {}) {
     try {
-      const plan = floorPlan || {}; const title = options.title || plan.floorName || '平面図'; const t = txFor(plan);
+      let plan = floorPlan || {}; if (options.highQuality && (!plan.rooms || !plan.rooms.length) && floorTemplates.createFloorTemplate) plan = floorTemplates.createFloorTemplate(options.floorType || '代表客室階'); const title = options.title || plan.floorName || '平面図'; const t = options.highQuality && coord.createDrawingCoordinateSystem ? coord.createDrawingCoordinateSystem({ scale: options.scale || plan.scale || '1/200', drawingArea: { x: 34, y: 34, width: 250, height: 194 } }) : txFor(plan);
       let svg = base.createSvgDocument({ title, drawingNumber: plan.drawingId || `floor-${plan.floorId || 'unknown'}`, scale: scaleText(options.scale || plan.scale, '1/200'), projectTitle: options.projectTitle || '建築設備士 第二次試験', sheetSize: 'A3', orientation: 'landscape' });
       const rooms = autoRooms(plan, t); const arch = [];
       arch.push(p.drawWall({ id: `wall-${escId(plan.floorId || 'floor')}-outer`, points: [[t.x(0), t.y(0)], [t.x(t.width), t.y(0)], [t.x(t.width), t.y(t.depth)], [t.x(0), t.y(t.depth)], [t.x(0), t.y(0)]] }));
@@ -47,11 +51,11 @@
       (plan.windows || []).forEach((w, i) => arch.push(p.drawWindow({ id: `window-${escId(w.id || i + 1)}`, x: t.x(w.x), y: t.y(w.y), width: Math.max(8, t.l(w.width || 3600)) })));
       (plan.stairs || []).forEach((st, i) => arch.push(p.drawRect({ id: `stair-${escId(st.id || i + 1)}`, x: t.x(st.x), y: t.y(st.y), width: t.l(st.width), height: t.l(st.height), fill: 'none', className: 'line-medium' }), p.drawText({ id: `stair-label-${i + 1}`, x: t.x(st.x + st.width / 2), y: t.y(st.y + st.height / 2), text: '階段', className: 'text-room', fontSize: 3 })));
       (plan.elevators || []).forEach((e, i) => arch.push(p.drawRect({ id: `ev-${escId(e.id || i + 1)}`, x: t.x(e.x), y: t.y(e.y), width: t.l(e.width), height: t.l(e.height), fill: 'none', className: 'line-medium' }), p.drawText({ id: `ev-label-${i + 1}`, x: t.x(e.x + e.width / 2), y: t.y(e.y + e.height / 2), text: 'EV', className: 'text-room', fontSize: 3 })));
-      const text = rooms.map((r, i) => p.drawText({ id: `room-label-${escId(r.roomId || i + 1)}`, x: t.x(safe(r.x) + safe(r.width) / 2), y: t.y(safe(r.y) + safe(r.height) / 2) - 2, text: r.name || '室', className: 'text-room', fontSize: 3.2 }) + p.drawText({ id: `room-area-${escId(r.roomId || i + 1)}`, x: t.x(safe(r.x) + safe(r.width) / 2), y: t.y(safe(r.y) + safe(r.height) / 2) + 3, text: r.area ? `${r.area}㎡` : '', className: 'text-dimension', fontSize: 2.2 })).join('');
+      const text = options.highQuality && annotations.createRoomAnnotations ? annotations.createRoomAnnotations(rooms, t, { showArea: options.showRoomAreas !== false }) : rooms.map((r, i) => p.drawText({ id: `room-label-${escId(r.roomId || i + 1)}`, x: t.x(safe(r.x) + safe(r.width) / 2), y: t.y(safe(r.y) + safe(r.height) / 2) - 2, text: r.name || '室', className: 'text-room', fontSize: 3.2 }) + p.drawText({ id: `room-area-${escId(r.roomId || i + 1)}`, x: t.x(safe(r.x) + safe(r.width) / 2), y: t.y(safe(r.y) + safe(r.height) / 2) + 3, text: r.area ? `${r.area}㎡` : '', className: 'text-dimension', fontSize: 2.2 })).join('');
       const eq = [...(plan.equipmentSpaces || []), ...(plan.shafts || [])].map((e, i) => p.drawRect({ id: `equipment-space-${escId(e.id || i + 1)}`, x: t.x(e.x), y: t.y(e.y), width: t.l(e.width), height: t.l(e.height), fill: 'none', className: 'line-thin' }) + p.drawText({ id: `equipment-label-${escId(e.id || i + 1)}`, x: t.x(e.x + e.width / 2), y: t.y(e.y + e.height / 2), text: e.name || e.shaftType || '設備室', className: 'text-room', fontSize: 2.6 })).join('');
       const dims = p.drawDimensionLine({ id: `dimension-${escId(plan.floorId || 'floor')}-width`, x: t.x(0), y: t.y(t.depth) + 28, width: t.l(t.width), text: `${Math.round(t.width).toLocaleString('ja-JP')}` }) + p.drawDimensionLine({ id: `dimension-${escId(plan.floorId || 'floor')}-depth`, x1: t.x(t.width) + 28, y1: t.y(0), x2: t.x(t.width) + 28, y2: t.y(t.depth), text: `${Math.round(t.depth).toLocaleString('ja-JP')}` }) + p.drawScaleBar({ id: 'scale-bar-floor', x: 300, y: 230, text: scaleText(options.scale || plan.scale, '1/200') });
       const notes = p.drawNorthArrow({ id: 'north-arrow-floor', x: 365, y: 48 }) + p.drawText({ id: 'legend-floor', x: 330, y: 200, text: '凡例：壁・柱・建具・室名', textAnchor: 'start', className: 'text-legend', fontSize: 2.5 });
-      svg = add(svg, 'Layer02_Grid', options.showGrid === false ? '' : renderGrid(plan, t));
+      svg = add(svg, 'Layer02_Grid', options.showGrid === false ? '' : (options.highQuality && gridEngine.renderGridLayout ? gridEngine.renderGridLayout(gridEngine.createGridLayout({ xGrids: (plan.gridLines?.x||[]).map(g=>({id:g.id,coordinate:g.coordinate??g.position})), yGrids: (plan.gridLines?.y||[]).map(g=>({id:g.id,coordinate:g.coordinate??g.position})) }), t, { showDimensions: options.showDimensions !== false }) : renderGrid(plan, t)));
       svg = add(svg, 'Layer01_Architecture', arch.join(''));
       svg = add(svg, 'Layer03_Dimensions', options.showDimensions === false ? '' : dims);
       svg = add(svg, 'Layer04_Equipment', options.showEquipmentSpaces === false ? '' : eq);

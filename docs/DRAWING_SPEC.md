@@ -110,3 +110,7 @@ SVG図面は、Web表示とA4印刷の両方で判読できることを前提と
 - HTML/SVG出力: `renderAnswerSheet()`と`renderAnswerSheetSet()`がHTMLまたはSVG文字列を返す。A4縦はHTML、A3横製図答案用紙はSVGを標準とする。
 - 印刷仕様: A4縦は`@page size: A4 portrait; margin: 8mm;`、A3横は`@page size: A3 landscape; margin: 0;`を想定し、印刷時は操作ボタン非表示、白背景、黒文字、図枠維持とする。
 - プレビュー方法: UIの「答案用紙プレビュー」で建築設備基本計画、空調・換気設備、給排水衛生設備、電気設備、共通記述用紙を選択し、生成・表示・SVG保存・印刷を行う。
+
+## Step9-4A CAD-style architectural sheet quality
+
+High-quality architectural drawings are A3 landscape SVG sheets. All major geometry is calculated from real dimensions and scale instead of arbitrary SVG placement. The drawing body target occupancy is 55-75% of sheet area. Required sheet regions are drawing body, title block, legend, equipment table, notes, scale, drawing number, project title, page number, examinee number, and name. Floor plans include grid bubbles on all sides, grid dimensions, overall dimensions, double-line wall classes, columns at grid intersections, doors with swing arcs, windows in wall lines, room names, areas, north arrow, scale, and legend.
