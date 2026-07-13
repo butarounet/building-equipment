@@ -15,6 +15,9 @@ test('Step9-4C typical guest floor has exam-level density and drawing quality', 
   assert.ok(result.metrics.paperUsageRatio >= 0.72 && result.metrics.paperUsageRatio <= 0.80);
   assert.ok(result.metrics.roomUsageRatio >= 0.80);
   assert.ok(result.metrics.guestRoomCount >= 24);
+  assert.equal(result.metrics.svgGuestRoomCount, result.metrics.guestRoomCount);
+  assert.ok(typ.rooms.some((r) => r.zone === 'guest' && r.x > typ.footprint.width * 0.65));
+  assert.ok(result.metrics.furnishedGuestRoomCount === result.metrics.guestRoomCount);
   assert.ok(typ.furniture.some((f) => f.type === 'bed'));
   assert.ok(typ.furniture.some((f) => f.type === 'bath'));
   assert.ok(typ.furniture.some((f) => f.type === 'basin'));
@@ -40,5 +43,6 @@ test('Step9-4C first floor usage and repeated generation are stable', () => {
   const first = set.floors.find((f) => f.floorId === '1');
   const result = validateFloorPlanQuality({ floorPlan: first, svg: renderFloorPlan(first, { highQuality: true }) });
   assert.ok(result.metrics.roomUsageRatio >= 0.75);
+  assert.ok(result.metrics.paperUsageRatio >= 0.72 && result.metrics.paperUsageRatio <= 0.80);
   for (let i = 0; i < 100; i += 1) assert.doesNotThrow(() => createSet());
 });

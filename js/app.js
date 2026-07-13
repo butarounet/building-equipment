@@ -336,8 +336,9 @@ document.addEventListener('DOMContentLoaded', () => {
         showFireCompartment: document.querySelector('#hotel-fire-toggle')?.checked !== false
       });
       architecturalCanvas.innerHTML = currentArchitecturalSvg;
-      const usage = currentArchitecturalSvg.match(/data-paper-usage-ratio=\"([^\"]+)/)?.[1];
-      architecturalMessage.textContent = `${highQuality ? '高品質建築図SVGを表示しました。' : '建築図SVGを表示しました。'}${usage ? ` 用紙占有率:${Math.round(Number(usage) * 100)}%` : ''}`;
+      const qualityResult = window.floorPlanQualityMetrics?.validateFloorPlanQuality ? window.floorPlanQualityMetrics.validateFloorPlanQuality({ floorPlan: selected.drawing, svg: currentArchitecturalSvg, building: generatedBuilding || {}, plan: generatedPlan || {} }) : null;
+      const m = qualityResult?.metrics || {};
+      architecturalMessage.textContent = `${highQuality ? '高品質建築図SVGを表示しました。' : '建築図SVGを表示しました。'} 用紙占有率:${Math.round((m.paperUsageRatio || 0) * 100)}% / 生成客室:${m.generatedGuestRoomCount ?? '-'} / SVG客室:${m.svgGuestRoomCount ?? '-'} / 家具室:${m.furnishedGuestRoomCount ?? '-'} / 室名:${m.roomNameDrawnCount ?? '-'} / 面積:${m.roomAreaDrawnCount ?? '-'} / 未利用:${Math.round((m.unusedAreaRatio || 0) * 100)}%`;
     } catch (error) {
       architecturalMessage.textContent = `SVG生成に失敗しました。${error.message || ''}`;
     }

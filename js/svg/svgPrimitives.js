@@ -49,7 +49,10 @@ const commonAttrs = (options = {}) => ({
   'stroke-width': options.strokeWidth,
   fill: options.fill,
   transform: options.transform,
-  'data-layer': options.layer
+  'data-layer': options.layer,
+  'data-zone': options.dataZone,
+  'data-room-ref': options.dataRoomId,
+  'data-metric': options.dataMetric
 });
 
 function drawLine(options = {}) {
