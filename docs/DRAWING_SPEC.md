@@ -114,3 +114,17 @@ SVG図面は、Web表示とA4印刷の両方で判読できることを前提と
 ## Step9-4A CAD-style architectural sheet quality
 
 High-quality architectural drawings are A3 landscape SVG sheets. All major geometry is calculated from real dimensions and scale instead of arbitrary SVG placement. The drawing body target occupancy is 55-75% of sheet area. Required sheet regions are drawing body, title block, legend, equipment table, notes, scale, drawing number, project title, page number, examinee number, and name. Floor plans include grid bubbles on all sides, grid dimensions, overall dimensions, double-line wall classes, columns at grid intersections, doors with swing arcs, windows in wall lines, room names, areas, north arrow, scale, and legend.
+
+## Hotel Floor Planner（Step9-4B）
+
+Hotel Floor Plannerは、Step9-4Aの座標系、A3横用紙構成、通り芯、階別テンプレート、注記配置、衝突検出の基盤を利用して、建築設備士第二次試験の問題図として判読可能な白黒CAD風ホテル平面図データを生成する機能である。
+
+- 階別テンプレート: 地下1階、1階、2階、3階、代表客室階、塔屋、屋上を標準対象とし、低層部と客室タワー部の外形差を保持する。
+- 中央コア: 乗用EV、サービスEV、非常用EV、2箇所以上の階段、EVホール、前室、EPS、PS、DS、清掃員スペース、リネン庫を上下階で整合させる。
+- シャフト: EPS、PS、DS、厨房排気DS、浴場排気DS、排煙DS、客室給排水PS、客室換気DSを、保守側と対象階を持つ縦系統として管理する。
+- 客室モジュール: 代表客室階は中廊下型を標準とし、外周窓、客室番号、前室・浴室の簡略区画、両端または離隔階段への避難方向を持つ。
+- 隣接条件: ロビー・フロント、厨房・レストラン、宴会場・宴会厨房、浴場・ろ過設備室などの必須隣接と、客室・大型機械室などの回避隣接をスコア化する。
+- サービス動線: 搬入口、厨房、宴会厨房、倉庫、サービスEV、客室階リネン、設備室を、客用動線と重大交差しない経路として保持する。
+- 避難動線: 各主要階で2方向避難経路を生成し、経路長を算定できる点列データとして保存する。
+- 高品質平面図生成: 建物外形、通り芯、柱、壁、扉、窓、階段、EV、室名、面積、室番号、シャフト、防火区画、寸法、方位、凡例、タイトルをSVG Rendererへ渡せる形式に整える。
+- 品質検査: `validateHotelFloorPlans` が対象階、上下階コア整合、シャフト整合、階段数、中廊下客室階、主要隣接、搬入経路、2方向避難、外形内配置、文字衝突許容、図面占有率を検査する。

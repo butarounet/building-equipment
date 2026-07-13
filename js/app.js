@@ -36,6 +36,11 @@ document.addEventListener('DOMContentLoaded', () => {
   const architecturalCanvas = document.querySelector('#architectural-preview-canvas');
   const architecturalMessage = document.querySelector('#architectural-preview-message');
   let currentArchitecturalSvg = null;
+  let generatedHotelFloorPlanSet = null;
+  const hotelPlanGenerateButton = document.querySelector('#hotel-plan-generate-button');
+  const hotelZoningButton = document.querySelector('#hotel-zoning-button');
+  const hotelFlowButton = document.querySelector('#hotel-flow-button');
+  const hotelAdjacencyButton = document.querySelector('#hotel-adjacency-button');
 
 
   const examGenerateButton = document.querySelector('#exam-generate-button');
@@ -117,6 +122,11 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   const findArchitecturalDrawing = (value) => {
+    if (generatedHotelFloorPlanSet && value !== 'site' && value !== 'blank') {
+      const normalized = value === '4-10' ? 'TYP' : value;
+      const floor = generatedHotelFloorPlanSet.floors.find((item) => item.floorId === normalized);
+      if (floor) return { drawing: floor, kind: 'floor' };
+    }
     const ready = ensureDrawings();
     if (ready.error) return ready;
     if (value === 'site') return { drawing: ready.drawings.sitePlan, kind: 'site' };
@@ -291,6 +301,13 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       let selected = findArchitecturalDrawing(architecturalSelect?.value || 'site');
       const highQuality = forceHighQuality || Boolean(architecturalHqToggle?.checked);
+      if ((selected.error || !selected.drawing) && window.hotelFloorPlanner) {
+        generatedHotelFloorPlanSet = generatedHotelFloorPlanSet || window.hotelFloorPlanner.planHotelFloors({ plan: generatedPlan || {}, building: generatedBuilding || { rooms: { guestRooms: 120 }, hotelType: getPlannerOptions().hotelType }, equipment: generatedEquipmentData || {}, options: getPlannerOptions() });
+        const value = architecturalSelect?.value || 'TYP';
+        const normalized = value === '4-10' ? 'TYP' : value;
+        const floor = generatedHotelFloorPlanSet.floors.find((item) => item.floorId === normalized);
+        selected = floor ? { drawing: floor, kind: 'floor' } : selected;
+      }
       if (selected.error && highQuality && window.floorTemplateEngine) {
         const value = architecturalSelect?.value || 'site';
         const floorType = value === 'site' ? null : value === '1' ? '1' : value === '2' ? '2' : value === '3' ? '3' : value === 'B1' ? 'basement' : value === 'RF' ? 'rooftop' : value === 'PH' ? 'penthouse' : 'typicalGuestFloor';
@@ -314,6 +331,40 @@ document.addEventListener('DOMContentLoaded', () => {
       architecturalMessage.textContent = `SVG生成に失敗しました。${error.message || ''}`;
     }
   };
+
+  if (hotelPlanGenerateButton) {
+    hotelPlanGenerateButton.addEventListener('click', () => {
+      generatedHotelFloorPlanSet = window.hotelFloorPlanner.planHotelFloors({ plan: generatedPlan || {}, building: generatedBuilding || { rooms: { guestRooms: 120 }, hotelType: getPlannerOptions().hotelType }, equipment: generatedEquipmentData || {}, options: getPlannerOptions() });
+      architecturalMessage.textContent = `ホテル平面計画を生成しました（${generatedHotelFloorPlanSet.floors.length}階）。`;
+    });
+  }
+
+  const ensureHotelFloorPlanSet = () => {
+    generatedHotelFloorPlanSet = generatedHotelFloorPlanSet || window.hotelFloorPlanner.planHotelFloors({ plan: generatedPlan || {}, building: generatedBuilding || { rooms: { guestRooms: 120 }, hotelType: getPlannerOptions().hotelType }, equipment: generatedEquipmentData || {}, options: getPlannerOptions() });
+    return generatedHotelFloorPlanSet;
+  };
+
+  if (hotelZoningButton) {
+    hotelZoningButton.addEventListener('click', () => {
+      const set = ensureHotelFloorPlanSet();
+      architecturalMessage.textContent = `ゾーニング表示: ${set.floors.map((f) => `${f.floorName}:${f.rooms.length}室`).join(' / ')}`;
+    });
+  }
+
+  if (hotelFlowButton) {
+    hotelFlowButton.addEventListener('click', () => {
+      const set = ensureHotelFloorPlanSet();
+      architecturalMessage.textContent = `動線表示: ${set.serviceFlows.map((flow) => flow.type).join('、')}`;
+    });
+  }
+
+  if (hotelAdjacencyButton) {
+    hotelAdjacencyButton.addEventListener('click', () => {
+      const set = ensureHotelFloorPlanSet();
+      const result = set.consistency.validation;
+      architecturalMessage.textContent = `隣接評価表示: ${result.isValid ? 'OK' : result.errors.join('、')}`;
+    });
+  }
 
   if (architecturalShowButton && architecturalCanvas) {
     architecturalShowButton.addEventListener('click', () => renderArchitecturalPreview(false));
