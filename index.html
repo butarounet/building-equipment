@@ -103,12 +103,13 @@
 
 
     <section class="card svg-preview no-print" id="architectural-preview">
-      <div class="section-heading">
-        <div>
+      <div class="architectural-preview__toolbar no-print">
+        <div class="architectural-preview__heading">
           <h2>建築図プレビュー</h2>
           <p>Drawing GeneratorのJSONから、建築基本設計図風のA3横SVG（配置図・各階平面図・白図）を生成します。</p>
         </div>
-        <div class="generator-actions no-print">
+        <div class="architectural-preview__controls">
+          <div class="architectural-preview__select">
           <label for="architectural-drawing-select">図面</label>
           <select id="architectural-drawing-select">
             <option value="site">配置図</option>
@@ -121,6 +122,8 @@
             <option value="RF">屋上</option>
             <option value="blank">白図</option>
           </select>
+          </div>
+          <div class="architectural-preview__checks" aria-label="表示切替">
           <label><input type="checkbox" id="architectural-hq-toggle"> 高品質モード</label>
           <label><input type="checkbox" id="architectural-grid-toggle" checked> 通り芯</label>
           <label><input type="checkbox" id="architectural-dim-toggle" checked> 寸法</label>
@@ -134,6 +137,8 @@
           <label><input type="checkbox" id="hotel-egress-flow-toggle" checked> 避難動線</label>
           <label><input type="checkbox" id="architectural-collision-toggle"> 衝突範囲</label>
           <label><input type="checkbox" id="architectural-sheet-toggle"> 用紙領域</label>
+          </div>
+          <div class="architectural-preview__buttons">
           <button class="generate-button" type="button" id="hotel-plan-generate-button">ホテル平面計画を生成</button>
           <button class="generate-button" type="button" id="architectural-show-button">建築図を表示</button>
           <button class="generate-button" type="button" id="architectural-hq-show-button">高品質建築図を表示</button>
@@ -142,6 +147,7 @@
           <button class="json-toggle-button" type="button" id="hotel-flow-button">動線表示</button>
           <button class="json-toggle-button" type="button" id="hotel-adjacency-button">隣接評価表示</button>
           <button class="print-button" type="button" id="architectural-print-button">印刷</button>
+          </div>
         </div>
       </div>
       <p class="svg-preview__message" id="architectural-preview-message" aria-live="polite">模擬試験生成後に建築図を表示できます。</p>
