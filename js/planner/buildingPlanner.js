@@ -1,3 +1,5 @@
+const STANDARD_HOTEL_TYPE = '都市型シティホテル';
+
 const HOTEL_TYPES = [
   '都市型シティホテル',
   '国際会議対応ホテル',
@@ -30,11 +32,28 @@ const PLAN_PRESETS = {
 };
 
 function randomInt(min, max, random = Math.random) {
-  return Math.floor(random() * (max - min + 1)) + min;
+  const raw = Number(random());
+  const safeRandom = Number.isFinite(raw) ? Math.min(Math.max(raw, 0), 0.999999999) : 0;
+  return Math.floor(safeRandom * (max - min + 1)) + min;
 }
 
 function pick(items, random = Math.random) {
-  return items[randomInt(0, items.length - 1, random)];
+  if (!Array.isArray(items) || items.length === 0) return undefined;
+  return items[randomInt(0, items.length - 1, random)] || items[0];
+}
+
+function resolveHotelType(requestedHotelType, random = Math.random) {
+  const warnings = [];
+  const requested = typeof requestedHotelType === 'string' ? requestedHotelType.trim() : '';
+  let hotelType = requested;
+  if (!hotelType) hotelType = pick(HOTEL_TYPES, random);
+  if (!HOTEL_TYPES.includes(hotelType)) {
+    if (requested) warnings.push(`未定義のhotelType「${requested}」が指定されたため、${STANDARD_HOTEL_TYPE}へフォールバックしました。`);
+    hotelType = STANDARD_HOTEL_TYPE;
+  }
+  const preset = PLAN_PRESETS[hotelType] || PLAN_PRESETS[STANDARD_HOTEL_TYPE];
+  if (!PLAN_PRESETS[hotelType]) warnings.push(`${hotelType}の設定が見つからないため、${STANDARD_HOTEL_TYPE}の設定を使用しました。`);
+  return { hotelType: PLAN_PRESETS[hotelType] ? hotelType : STANDARD_HOTEL_TYPE, preset, warnings };
 }
 
 function rangePolicy(name, range, unit = '') {
@@ -42,10 +61,12 @@ function rangePolicy(name, range, unit = '') {
 }
 
 function planHotelProject(options = {}) {
-  const random = options.random || Math.random;
-  const hotelType = HOTEL_TYPES.includes(options.hotelType) ? options.hotelType : pick(HOTEL_TYPES, random);
-  const preset = PLAN_PRESETS[hotelType];
-  const examDifficulty = options.examDifficulty === 'hard' ? 'hard' : 'standard';
+  const safeOptions = options || {};
+  const random = typeof safeOptions.random === 'function' ? safeOptions.random : Math.random;
+  const resolved = resolveHotelType(safeOptions.hotelType, random);
+  const hotelType = resolved.hotelType;
+  const preset = resolved.preset;
+  const examDifficulty = safeOptions.examDifficulty === 'hard' ? 'hard' : 'standard';
 
   return {
     projectType: 'hotel',
@@ -103,7 +124,8 @@ function planHotelProject(options = {}) {
       mechanicalRoomPrimaryLocation: '地下階',
       epsPsDsContinuity: '各階縦貫し用途別系統を分離する'
     },
-    examDifficulty
+    examDifficulty,
+    warnings: resolved.warnings
   };
 }
 
@@ -151,5 +173,5 @@ function validateHotelPlan(plan) {
 }
 
 if (typeof module !== 'undefined') {
-  module.exports = { HOTEL_TYPES, planHotelProject, validateHotelPlan };
+  module.exports = { HOTEL_TYPES, PLAN_PRESETS, STANDARD_HOTEL_TYPE, planHotelProject, validateHotelPlan };
 }

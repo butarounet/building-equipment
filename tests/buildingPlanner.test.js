@@ -56,3 +56,47 @@ test('generateBuilding reflects a supplied plan', () => {
   assert.ok(building.rooms.guestRooms <= plan.guestRoomPolicy.guestRooms.max);
   assert.ok(validateBuilding(generated).isValid);
 });
+
+test('planHotelProject handles missing, empty, and invalid hotelType defensively', () => {
+  const defaultPlan = planHotelProject();
+  assert.ok(defaultPlan.designTheme);
+  assert.equal(validateHotelPlan(defaultPlan).isValid, true);
+
+  const emptyPlan = planHotelProject({ hotelType: '' });
+  assert.ok(emptyPlan.designTheme);
+  assert.equal(validateHotelPlan(emptyPlan).isValid, true);
+
+  const invalidPlan = planHotelProject({ hotelType: '存在しないホテル' });
+  assert.equal(invalidPlan.hotelType, '都市型シティホテル');
+  assert.ok(invalidPlan.designTheme);
+  assert.ok(invalidPlan.warnings.some((warning) => warning.includes('フォールバック')));
+  assert.equal(validateHotelPlan(invalidPlan).isValid, true);
+});
+
+test('all defined hotel types have themes and valid presets', () => {
+  const { HOTEL_TYPES, PLAN_PRESETS } = require('../js/planner/buildingPlanner');
+  for (const hotelType of HOTEL_TYPES) {
+    assert.ok(PLAN_PRESETS[hotelType], `${hotelType}のpresetが必要です。`);
+    assert.ok(PLAN_PRESETS[hotelType].theme, `${hotelType}のthemeが必要です。`);
+    const plan = planHotelProject({ hotelType });
+    assert.equal(plan.hotelType, hotelType);
+    assert.ok(plan.designTheme);
+    assert.ok(plan.floorPolicy.aboveGround);
+  }
+});
+
+test('planHotelProject can generate 100 consecutive valid plans without throwing', () => {
+  for (let i = 0; i < 100; i += 1) {
+    const plan = planHotelProject({ random: () => (i % 101) / 100 });
+    assert.ok(plan.designTheme);
+    assert.equal(validateHotelPlan(plan).isValid, true);
+  }
+});
+
+test('mock exam generation reaches Building and Equipment Generator with default planner options', () => {
+  const plan = planHotelProject();
+  const building = generateBuilding({ plan });
+  const equipment = require('../js/generator/equipmentGenerator').generateEquipment(building);
+  assert.ok(building.building.name);
+  assert.ok(equipment.equipment.hvac.systems.length > 0);
+});
