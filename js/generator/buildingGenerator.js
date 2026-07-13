@@ -8,11 +8,11 @@ const ZONES = [
 ];
 const STRUCTURES = ['鉄骨鉄筋コンクリート造、一部鉄骨造', '鉄骨造、一部鉄筋コンクリート造', '鉄筋コンクリート造、一部鉄骨造'];
 const HOTEL_TYPE_USES = {
-  '都市型シティホテル': '宿泊施設（都市型シティホテル）',
-  '国際会議対応ホテル': '宿泊施設（国際会議対応ホテル）',
-  '宴会場併設ホテル': '宿泊施設（宴会場併設ホテル）',
-  '温浴施設付きホテル': '宿泊施設（温浴施設付きホテル）',
-  '宿泊主体型ホテル': '宿泊施設（宿泊主体型ホテル）'
+  city: '宿泊施設（都市型シティホテル）',
+  conference: '宿泊施設（国際会議対応ホテル）',
+  banquet: '宿泊施設（宴会場併設ホテル）',
+  spa: '宿泊施設（温浴施設付きホテル）',
+  lodging: '宿泊施設（宿泊主体型ホテル）'
 };
 
 function randomInt(min, max, random = Math.random) {
@@ -79,9 +79,9 @@ function generateBuilding(options = {}) {
     schemaVersion: '1.0.0',
     buildingType: 'hotel',
     building: {
-      name: plan ? `${plan.hotelType}計画` : pick(HOTEL_NAMES, random),
+      name: plan ? `${plan.hotelTypeName || plan.hotelType}計画` : pick(HOTEL_NAMES, random),
       concept: plan?.designTheme || pick(CONCEPTS, random),
-      use: plan ? (HOTEL_TYPE_USES[plan.hotelType] || `宿泊施設（${plan.hotelType}）`) : '宿泊施設（シティホテル）',
+      use: plan ? (HOTEL_TYPE_USES[plan.hotelType] || `宿泊施設（${plan.hotelTypeName || plan.hotelType}）`) : '宿泊施設（シティホテル）',
       location: pick(LOCATIONS, random),
       siteCondition: plan?.siteCondition?.access || '前面道路幅員12m以上、サービス動線と歩行者動線を分離可能な整形敷地',
       zoning: zone.name,
@@ -113,7 +113,7 @@ function generateBuilding(options = {}) {
         totalDesignPopulation: rooms * 2 + Math.round(rooms * 0.28) + Math.round(banquetArea / 2),
         unit: 'persons'
       },
-      planningSource: plan ? { hotelType: plan.hotelType, examDifficulty: plan.examDifficulty, zoningPolicy: plan.zoningPolicy } : undefined,
+      planningSource: plan ? { hotelType: plan.hotelType, hotelTypeName: plan.hotelTypeName, examDifficulty: plan.examDifficulty, zoningPolicy: plan.zoningPolicy } : undefined,
       legal: {
         buildingCoverageRatio: Number((buildingAreaValue / siteAreaValue).toFixed(3)),
         floorAreaRatio: Number((totalFloorAreaValue / siteAreaValue).toFixed(3)),

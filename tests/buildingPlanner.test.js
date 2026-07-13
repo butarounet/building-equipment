@@ -1,7 +1,11 @@
 const assert = require('node:assert/strict');
 const { test } = require('node:test');
-const { planHotelProject, validateHotelPlan } = require('../js/planner/buildingPlanner');
+const { HOTEL_TYPES, HOTEL_TYPE_LABELS, HOTEL_TYPE_CONFIGS, planHotelProject, validateHotelPlan } = require('../js/planner/buildingPlanner');
 const { generateBuilding, validateBuilding } = require('../js/generator/buildingGenerator');
+const { generateEquipment, validateEquipment } = require('../js/generator/equipmentGenerator');
+const { generateMaterials } = require('../js/generator/materialGenerator');
+const { generateDrawings } = require('../js/generator/drawingGenerator');
+const { generateExam, validateExam } = require('../js/generator/examGenerator');
 
 test('planHotelProject returns a valid hotel project plan', () => {
   const plan = planHotelProject();
@@ -24,7 +28,8 @@ test('planHotelProject returns a valid hotel project plan', () => {
 
 test('planHotelProject respects specified hotelType', () => {
   const plan = planHotelProject({ hotelType: '温浴施設付きホテル' });
-  assert.equal(plan.hotelType, '温浴施設付きホテル');
+  assert.equal(plan.hotelType, 'spa');
+  assert.equal(plan.hotelTypeName, '温浴施設付きホテル');
   assert.equal(plan.spaPolicy.required, true);
   assert.equal(validateHotelPlan(plan).isValid, true);
 });
@@ -42,11 +47,41 @@ test('validateHotelPlan detects invalid plans', () => {
   assert.ok(result.errors.length >= 1);
 });
 
+
+test('planHotelProject is defensive and normalizes hotelType inputs', () => {
+  for (let i = 0; i < 100; i += 1) {
+    const plan = planHotelProject();
+    assert.equal(validateHotelPlan(plan).isValid, true);
+  }
+
+  for (const key of HOTEL_TYPES) {
+    const plan = planHotelProject({ hotelType: key });
+    assert.equal(plan.hotelType, key);
+    assert.ok(HOTEL_TYPE_CONFIGS[key].theme);
+    assert.equal(plan.designTheme, HOTEL_TYPE_CONFIGS[key].theme);
+  }
+
+  for (const [key, label] of Object.entries(HOTEL_TYPE_LABELS)) {
+    const plan = planHotelProject({ hotelType: label });
+    assert.equal(plan.hotelType, key);
+    assert.equal(plan.hotelTypeName, label);
+    assert.equal(plan.designTheme, HOTEL_TYPE_CONFIGS[key].theme);
+  }
+
+  for (const hotelType of ['', null, undefined, '存在しないhotelType']) {
+    const plan = planHotelProject({ hotelType });
+    assert.equal(plan.hotelType, 'city');
+    assert.equal(plan.hotelTypeName, '都市型シティホテル');
+    assert.equal(validateHotelPlan(plan).isValid, true);
+  }
+});
+
 test('generateBuilding reflects a supplied plan', () => {
   const plan = planHotelProject({ hotelType: '国際会議対応ホテル', examDifficulty: 'hard' });
   const generated = generateBuilding({ plan });
   const building = generated.building;
-  assert.equal(building.planningSource.hotelType, '国際会議対応ホテル');
+  assert.equal(building.planningSource.hotelType, 'conference');
+  assert.equal(building.planningSource.hotelTypeName, '国際会議対応ホテル');
   assert.equal(building.planningSource.examDifficulty, 'hard');
   assert.match(building.use, /国際会議対応ホテル/);
   assert.equal(building.concept, plan.designTheme);
@@ -55,4 +90,20 @@ test('generateBuilding reflects a supplied plan', () => {
   assert.ok(building.rooms.guestRooms >= plan.guestRoomPolicy.guestRooms.min);
   assert.ok(building.rooms.guestRooms <= plan.guestRoomPolicy.guestRooms.max);
   assert.ok(validateBuilding(generated).isValid);
+});
+
+
+test('mock exam generation pipeline completes without exceptions', () => {
+  assert.doesNotThrow(() => {
+    const plan = planHotelProject({ hotelType: 'conference', random: () => 0.53 });
+    const building = generateBuilding({ plan, random: () => 0.53 });
+    const equipment = generateEquipment(building);
+    assert.ok(equipment.equipment);
+    assert.equal(validateEquipment(equipment, building).isValid, true);
+    const materials = generateMaterials({ plan, building, equipment });
+    const drawings = generateDrawings({ plan, building, equipment, materials });
+    const exam = generateExam({ plan, building, equipment, materials, drawings });
+    assert.ok(exam.examId);
+    assert.equal(validateExam(exam, { plan, building, equipment, materials, drawings }).isValid, true);
+  });
 });

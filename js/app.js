@@ -5,6 +5,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const generateButton = document.querySelector('#generate-button');
   const jsonToggleButton = document.querySelector('#json-toggle-button');
   const resultArea = document.querySelector('#generation-result');
+  const hotelTypeSelect = document.querySelector('#hotel-type-select');
   const jsonPreviewCode = document.querySelector('#json-preview-code code');
   let generatedPlan = null;
   let generatedBuilding = null;
@@ -66,9 +67,14 @@ document.addEventListener('DOMContentLoaded', () => {
     return generatedAnswerSheetSet;
   };
 
+  const getPlannerOptions = () => {
+    const hotelType = hotelTypeSelect?.value;
+    return hotelType ? { hotelType } : {};
+  };
+
   const ensureExam = () => {
     if (!generatedBuilding) {
-      generatedPlan = window.planHotelProject ? window.planHotelProject() : null;
+      generatedPlan = window.planHotelProject ? window.planHotelProject(getPlannerOptions()) : null;
       generatedBuilding = generateBuilding({ plan: generatedPlan });
       generatedEquipmentData = generateEquipment(generatedBuilding);
     }
@@ -222,7 +228,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (generateButton && resultArea) {
     generateButton.addEventListener('click', () => {
-      generatedPlan = window.planHotelProject ? window.planHotelProject() : null;
+      generatedPlan = window.planHotelProject ? window.planHotelProject(getPlannerOptions()) : null;
       generatedBuilding = generateBuilding({ plan: generatedPlan });
       generatedEquipmentData = generateEquipment(generatedBuilding);
       generatedMaterials = window.generateMaterials ? window.generateMaterials({ plan: generatedPlan, building: generatedBuilding, equipment: generatedEquipmentData }) : null;
