@@ -15,12 +15,25 @@ const HOTEL_TYPE_USES = {
   lodging: '宿泊施設（宿泊主体型ホテル）'
 };
 
+function normalizeRandomValue(value) {
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric)) return Math.random();
+  return Math.min(Math.max(numeric, 0), 1 - Number.EPSILON);
+}
+
 function randomInt(min, max, random = Math.random) {
-  return Math.floor(random() * (max - min + 1)) + min;
+  const safeMin = Math.ceil(Math.min(min, max));
+  const safeMax = Math.floor(Math.max(min, max));
+  const value = normalizeRandomValue(
+    typeof random === 'function' ? random() : Math.random()
+  );
+  return Math.floor(value * (safeMax - safeMin + 1)) + safeMin;
 }
 
 function pick(items, random = Math.random) {
-  return items[randomInt(0, items.length - 1, random)];
+  if (!Array.isArray(items) || items.length === 0) return undefined;
+  const index = randomInt(0, items.length - 1, random);
+  return items[index] ?? items[0];
 }
 
 function roundTo(value, unit) {
@@ -42,9 +55,15 @@ function ratioInPolicy(policy, fallbackMin, fallbackMax, random) {
 }
 
 function generateBuilding(options = {}) {
-  const random = options.random || Math.random;
+  const random =
+    typeof options.random === 'function'
+      ? options.random
+      : Math.random;
   const plan = options.plan || null;
-  const zone = pick(ZONES, random);
+  const zone = pick(ZONES, random) || ZONES[0];
+  if (!zone) {
+    throw new Error('有効な用途地域設定がありません。');
+  }
   const aboveGround = numberInPolicy(plan?.floorPolicy?.aboveGround, 8, 12, random);
   const basement = plan ? numberInPolicy(plan.floorPolicy?.basement, 1, 2, random) : (random() < 0.82 ? 1 : 2);
   const penthouse = plan?.floorPolicy?.penthouse || 1;
@@ -162,5 +181,5 @@ function validateBuilding(buildingJson) {
 }
 
 if (typeof module !== 'undefined') {
-  module.exports = { generateBuilding, validateBuilding };
+  module.exports = { generateBuilding, validateBuilding, normalizeRandomValue, randomInt, pick };
 }
