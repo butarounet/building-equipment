@@ -29,5 +29,5 @@ test('Drawing Requirement Quality Checkerは本試験レベルの整合項目を
   const req = analyzeQuestionRequirement({ question: { questionId: 'Q05', prompt: '会議室照明設備図を作成し、照明台数計算表を示せ。' }, roomType: '会議室', equipmentSystem: ['lighting-control'] });
   const report = checkDrawingRequirementQuality({ drawingRequirement: req, questionMetadata: { roomType: '会議室' }, scale: req.requiredScale, cropBox: { x: 0, y: 0, width: 1, height: 1 }, metadata: { targetOnly: true }, excludedEquipment: req.hiddenEquipment, sheetLayout: { frame: '本試験答案レイアウト', adaptive: true } });
   assert.equal(report.isValid, true, report.errors.join('\n'));
-  assert.deepEqual(report.checks.map((c) => c.label), ['問題文と白図一致', '問題文と縮尺一致', '問題文と切り出し範囲一致', '問題文と設備方式一致', '問題文と表示情報一致', '本試験レベル一致']);
+  assert.deepEqual(report.checks.map((c) => c.label), ['問題文と白図一致', '問題文と縮尺一致', '問題文と切り出し範囲一致', '問題文と設備方式一致', '問題文と表示情報一致', '本試験レベル一致', '作図対象抽出一致']);
 });
