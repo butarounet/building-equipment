@@ -50,6 +50,7 @@
 - 建築企画・建築条件・設備条件から「資料1 計画条件」を生成するMaterial1 Generator
 - 資料1〜資料5を一括生成・管理するMaterial Generator
 - 生成条件を検査するQuality Checker
+- Floor Planner終了後に建築図品質・CAD品質・印刷品質を高めるBuilding Drawing Quality Engine
 - ブラウザで建築条件・設備条件を確認できるGenerator Preview画面
 
 ## データモデル
@@ -123,6 +124,45 @@ Quality Checkerとして、生成後の建築条件を検査します。
 - 地下階と機械室配置の整合
 
 戻り値は `{ isValid, errors, warnings, checks }` です。
+
+
+## Building Drawing Quality Engine
+
+`js/layout/buildingDrawingQualityEngine.js` は、Floor Plannerが生成した `FloorPlan JSON` を、建築設備士第二次試験レベルの高品質な建築図へ整える後処理エンジンです。Building DrawingはFloor Planner終了後に必ずこのEngineを通過し、以降の設備図、白図、答案用紙、共通問題図は、この高品質建築図をベースとして生成します。
+
+全体フローは以下です。
+
+```text
+Building JSON
+↓
+Floor Planner
+↓
+Building Drawing Quality Engine
+↓
+Architectural Drawing Renderer
+↓
+SVG / PDF
+```
+
+入力は `FloorPlan JSON`、`Grid JSON`、`Room JSON`、`Core JSON`、`Wall JSON`、`Door JSON`、`Window JSON`、`EquipmentSpace JSON` を想定します。Engineは以下のサブエンジン相当の処理を持ちます。
+
+- `GridRefinementEngine`: X/Y通り、通り芯番号、柱芯を整え、寸法線・通り芯記号・芯位置を生成
+- `WallEngine`: 外壁、耐力壁、間仕切壁、防火区画壁を壁厚・開口・壁芯付きで生成
+- `ColumnEngine`: RC柱、SRC柱、S柱の柱型・柱寸法・柱芯を生成
+- `DoorWindowEngine`: 片開き、親子扉、引戸、防火戸、シャッター、FIX窓、外部サッシの建具記号・開閉方向・窓寸法を生成
+- `DimensionEngine`: 建物外形、柱芯、部屋寸法、廊下幅、EPS、PS、DS、機械室などの寸法線を縮尺に応じて配置
+- `AnnotationEngine`: 室名、階名、縮尺、図面番号、北矢印、凡例、方位、図枠を生成
+- `DrawingStyleEngine`: `ExamCAD` として線幅 `0.13 / 0.18 / 0.25 / 0.35 / 0.50` とCAD風レイヤを統一
+- `DrawingQualityChecker`: 通り芯、柱位置、壁厚、建具方向、開口位置、窓位置、廊下幅、寸法線、室名、方位、縮尺、EPS、PS、DS、機械室、図枠、レイヤ、印刷品質、SVG整合、CAD品質を100点評価
+
+```js
+const { improveBuildingDrawing } = require('./js/layout/buildingDrawingQualityEngine');
+
+const result = improveBuildingDrawing(floorPlan, { grid, rooms, walls, doors, windows, equipmentSpaces });
+console.log(result.qualityScore, result.cadStyle); // 例: 96, ExamCAD
+```
+
+出力は `{ qualityScore, warnings, drawingLayers, dimensions, annotations, cadStyle, enhancedFloorPlan }` です。`Architectural Drawing Renderer` は既定でこのEngineを通してから配置図、各階平面図、屋上伏図、建築白図、設備白図、共通問題白図をレンダリングします。
 
 ## Equipment Generator
 
