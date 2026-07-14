@@ -4,6 +4,7 @@ const { generateSystemDiagrams } = require('../planner/systemDiagramGenerator');
 const { renderBlankPlan } = require('../svg/blankPlanRenderer');
 const { renderEquipmentDrawing } = require('../svg/equipmentDrawingRenderer');
 const { renderAnswerSheetSet } = require('../svg/answerSheetRenderer');
+const { checkExamConsistency } = require('../quality/examConsistencyEngine');
 
 const now = () => new Date().toISOString();
 const sha = (s) => crypto.createHash('sha256').update(String(s)).digest('hex');
@@ -24,6 +25,8 @@ function checkPackage(pkg) { const files = pkg.artifacts || []; const has = (pre
 function generateExamPackage(input = {}) {
   const exam = input.exam || input.Exam || {}; const drawings = input.drawings || input.Drawing || {}; const equipment = (input.equipment && input.equipment.equipment) || input.equipment || input.Equipment || {}; const answerSheets = input.answerSheets || generateAnswerSheets({ exam, materials: input.materials, drawings, options: input.options });
   const systemDiagrams = input.systemDiagrams || generateSystemDiagrams({ hvac: input.hvac || input.HVAC, plumbing: input.plumbing || input.Plumbing, electrical: input.electrical || input.Electrical, mep: input.mep || input.MEP });
+  const consistencyReport = checkExamConsistency({ exam, building: input.building, floorPlans: drawings.floorPlans, materials: input.materials, questions: exam?.selection, drawings, answerSheets, modelAnswers: input.modelAnswers, scoring: input.scoring });
+  if (!consistencyReport.passed) { const error = new Error(`ExamConsistencyEngine failed: ${consistencyReport.errors.join(' / ')}`); error.consistencyReport = consistencyReport; throw error; }
   const book = booklet(exam); const sched = equipmentSchedule(equipment); const leg = legend(systemDiagrams, drawings); const desc = descriptions(exam); const calc = calculations(exam);
   const artifacts = [];
   artifacts.push(artifact('exam-package-json','json','json/exam-package.json', json({ examId: exam.examId, generatedAt: now() }), [exam.examId]));
@@ -37,7 +40,7 @@ function generateExamPackage(input = {}) {
   artifacts.push(artifact('submission-pdf','pdf','pdf/submission.pdf', pdfStub(manifest)));
   artifacts.push(artifact('submission-zip','zip','zip/submission.zip.txt', zipStub(manifest)));
   const pkg = { packageId: `exam-package-${exam.examId || Date.now()}`, schemaVersion: '1.0.0', engine: 'Step9-12 ExamBookletGenerator', generatedAt: now(), examBooklet: book, answerSheets, whiteDrawings: drawings.blankPlans || [], equipmentDrawings: drawings.floorPlans || [], systemDiagrams, detailDrawings: drawings.detailDrawings || [], equipmentSchedule: sched, legend: leg, descriptionSheet: desc, calculationSheet: calc, drawingIndex: arr(drawings.titleBlocks).map((d) => ({ drawingNumber: d.drawingNumber, title: d.drawingName, scale: d.scale, pageNumber: d.pageNumber })), svgPackage: artifacts.filter((a) => a.type === 'svg').map((a) => a.path), printPackage: { pageOrder: book.pageOrder, pdfPath: 'pdf/submission.pdf' }, submissionMetadata: { examId: exam.examId, answerSheetSetId: answerSheets.answerSheetSetId, drawingSetId: drawings.drawingSetId, artifactCount: artifacts.length, checksums: Object.fromEntries(artifacts.map((a) => [a.path, a.checksum])) }, artifacts };
-  pkg.qualityReport = checkPackage(pkg); pkg.answerSheetValidation = validateAnswerSheets(answerSheets, exam); return pkg;
+  pkg.examConsistencyReport = consistencyReport; pkg.qualityReport = checkPackage(pkg); pkg.answerSheetValidation = validateAnswerSheets(answerSheets, exam); return pkg;
 }
 module.exports = { generateExamPackage, checkPackage, ExamBookletGenerator: { generate: booklet }, AnswerSheetGenerator: { generate: generateAnswerSheets }, WhiteDrawingGenerator: { render: renderBlankPlan }, DetailDrawingGenerator: {}, EquipmentScheduleGenerator: { generate: equipmentSchedule }, LegendGenerator: { generate: legend }, CalculationSheetGenerator: { generate: calculations }, DescriptionGenerator: { generate: descriptions }, PackageAssembler: { assemble: generateExamPackage }, ExamQualityChecker: { check: checkPackage } };
 if (typeof window !== 'undefined') window.examPackageGenerator = module.exports;
