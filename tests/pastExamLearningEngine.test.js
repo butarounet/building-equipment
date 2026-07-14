@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { PastExamLearningEngine, learnPastExams, analyzeWithPastExamLearning } = require('../js/learning/pastExamLearningEngine');
+const { PastExamLearningEngine, learnPastExams } = require('../js/learning/pastExamLearningEngine');
 
 test('PastExamLearningEngine learns Reiwa 2 through Reiwa 7 exam style knowledge', () => {
   const result = learnPastExams();
