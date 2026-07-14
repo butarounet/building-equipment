@@ -1,0 +1,171 @@
+{
+  "buildingType": "museum",
+  "version": "1.0.0",
+  "patterns": [
+    {
+      "id": "museum-exam-1",
+      "name": "美術館標準プラン1",
+      "examUse": "文化施設（美術館）",
+      "site": {
+        "shape": "rectangular",
+        "area": 5200,
+        "access": "前面道路12m・サービス道路6m"
+      },
+      "floors": {
+        "basement": 1,
+        "aboveGround": 2,
+        "penthouse": 1,
+        "typicalGuestFloors": []
+      },
+      "grid": {
+        "spanX": 8000,
+        "spanY": 7200,
+        "columnsX": 8,
+        "columnsY": 5
+      },
+      "rooms": {
+        "majorRooms": [
+          "展示室",
+          "収蔵庫",
+          "講堂",
+          "カフェ"
+        ],
+        "guestRooms": 0,
+        "banquetHall": {
+          "count": 0,
+          "area": 700
+        },
+        "restaurant": {
+          "count": 0,
+          "area": 450
+        },
+        "kitchen": {
+          "area": 80
+        }
+      },
+      "equipment": {
+        "hvac": "FCU",
+        "plumbing": "受水槽+加圧給水",
+        "electrical": "屋内キュービクル",
+        "bems": false,
+        "bcp": false
+      },
+      "constraints": [
+        "二方向避難",
+        "防火区画",
+        "設備シャフト縦貫",
+        "搬入動線分離"
+      ]
+    },
+    {
+      "id": "museum-exam-2",
+      "name": "美術館標準プラン2",
+      "examUse": "文化施設（美術館）",
+      "site": {
+        "shape": "corner",
+        "area": 6400,
+        "access": "角地・歩車分離"
+      },
+      "floors": {
+        "basement": 1,
+        "aboveGround": 3,
+        "penthouse": 1,
+        "typicalGuestFloors": []
+      },
+      "grid": {
+        "spanX": 8400,
+        "spanY": 8000,
+        "columnsX": 9,
+        "columnsY": 6
+      },
+      "rooms": {
+        "majorRooms": [
+          "展示室",
+          "収蔵庫",
+          "講堂",
+          "カフェ"
+        ],
+        "guestRooms": 0,
+        "banquetHall": {
+          "count": 0,
+          "area": 880
+        },
+        "restaurant": {
+          "count": 0,
+          "area": 580
+        },
+        "kitchen": {
+          "area": 110
+        }
+      },
+      "equipment": {
+        "hvac": "AHU",
+        "plumbing": "高置水槽併用",
+        "electrical": "特高受電",
+        "bems": true,
+        "bcp": false
+      },
+      "constraints": [
+        "二方向避難",
+        "防火区画",
+        "設備シャフト縦貫",
+        "搬入動線分離"
+      ]
+    },
+    {
+      "id": "museum-exam-3",
+      "name": "美術館標準プラン3",
+      "examUse": "文化施設（美術館）",
+      "site": {
+        "shape": "flag",
+        "area": 7600,
+        "access": "駅前広場接続"
+      },
+      "floors": {
+        "basement": 2,
+        "aboveGround": 4,
+        "penthouse": 1,
+        "typicalGuestFloors": []
+      },
+      "grid": {
+        "spanX": 9000,
+        "spanY": 8400,
+        "columnsX": 10,
+        "columnsY": 7
+      },
+      "rooms": {
+        "majorRooms": [
+          "展示室",
+          "収蔵庫",
+          "講堂",
+          "カフェ"
+        ],
+        "guestRooms": 0,
+        "banquetHall": {
+          "count": 0,
+          "area": 1060
+        },
+        "restaurant": {
+          "count": 0,
+          "area": 710
+        },
+        "kitchen": {
+          "area": 140
+        }
+      },
+      "equipment": {
+        "hvac": "VAV",
+        "plumbing": "直結増圧+受水槽",
+        "electrical": "屋外キュービクル",
+        "bems": true,
+        "bcp": true
+      },
+      "constraints": [
+        "二方向避難",
+        "防火区画",
+        "設備シャフト縦貫",
+        "搬入動線分離"
+      ]
+    }
+  ]
+}
