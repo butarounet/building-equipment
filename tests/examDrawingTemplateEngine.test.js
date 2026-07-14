@@ -1,6 +1,6 @@
 const assert = require('node:assert/strict');
 const { test } = require('node:test');
-const { generateExamDrawingTemplates, TemplateLibrary, SheetLayoutEngine, ViewportLayoutEngine, TitleBlockGenerator, LegendLayoutEngine, ScaleBarGenerator, DrawingCompositionEngine, TemplateQualityChecker } = require('../js/generator/examDrawingTemplateEngine');
+const { generateExamDrawingTemplates, generateArchitecturalCadStandard, TemplateLibrary, SheetLayoutEngine, ViewportLayoutEngine, TitleBlockGenerator, LegendLayoutEngine, ScaleBarGenerator, CadLayerEngine, LineStyleEngine, LineWeightEngine, ArchitecturalSymbolEngine, DimensionStyleEngine, TextStyleEngine, GridBubbleEngine, ReferenceMarkerEngine, PrintingQualityEngine, CadQualityChecker, DrawingCompositionEngine, TemplateQualityChecker } = require('../js/generator/examDrawingTemplateEngine');
 
 test('Step10-7 Exam Drawing Template Engine creates fixed exam drawing templates', () => {
   const result = generateExamDrawingTemplates({ context: { buildingName: '中央ホテル', buildingUse: 'ホテル' } });
@@ -40,4 +40,45 @@ test('Step10-7 exposes each template engine component', () => {
   assert.ok(legend.items.some((i) => i.label === '北矢印'));
   assert.equal(scaleBar.totalWorldMeters, 40);
   assert.equal(TemplateQualityChecker.check(drawing).score, 100);
+});
+
+test('Step10-8 Architectural CAD Standard Engine creates shared CAD rules', () => {
+  const result = generateArchitecturalCadStandard({ xCount: 3, yCount: 2 });
+  assert.equal(result.metadata.engine, 'Architectural CAD Standard Engine');
+  assert.ok(result.cadStandard.layers.some((l) => l.name === 'A-WALL'));
+  assert.ok(result.cadStandard.layers.some((l) => l.name === 'M-DUCT'));
+  assert.ok(result.cadStandard.layers.some((l) => l.name === 'E-POWER'));
+  assert.equal(result.cadStandard.lineWeights.exteriorWall, 0.50);
+  assert.equal(result.cadStandard.lineWeights.centerLine, 0.09);
+  assert.equal(result.cadStandard.lineStyles.fireCompartment.label, '防火区画線');
+  assert.ok(result.cadStandard.symbols.some((s) => s.label === '階段'));
+  assert.ok(result.cadStandard.symbols.some((s) => s.key === 'doorNumber'));
+  assert.ok(result.cadStandard.dimensions.types.includes('通り芯寸法'));
+  assert.ok(result.cadStandard.dimensions.levelSymbols.includes('RFL'));
+  assert.deepEqual(result.cadStandard.textStyles.heights, [2.5, 3.5, 5, 7, 10]);
+  assert.equal(result.cadStandard.gridBubbles.x[0].label, 'X1');
+  assert.equal(result.cadStandard.gridBubbles.y[1].label, 'Y2');
+  assert.deepEqual(result.cadStandard.referenceMarkers.sections, ['A-A', 'B-B']);
+  assert.equal(result.cadStandard.printing.paper, 'A3');
+  assert.equal(result.cadStandard.printing.dpi, 300);
+  assert.equal(result.quality.score, 100);
+});
+
+test('Step10-8 exposes CAD standard component engines and integrates with templates', () => {
+  const layers = CadLayerEngine.generate();
+  const styles = LineStyleEngine.generate();
+  const weights = LineWeightEngine.generate();
+  const symbols = ArchitecturalSymbolEngine.generate();
+  const dimensions = DimensionStyleEngine.generate();
+  const textStyles = TextStyleEngine.generate();
+  const gridBubbles = GridBubbleEngine.generate({ xCount: 2, yCount: 2 });
+  const referenceMarkers = ReferenceMarkerEngine.generate();
+  const printing = PrintingQualityEngine.generate();
+  const cadStandard = { layers, lineStyles: styles, lineWeights: weights, symbols, dimensions, textStyles, gridBubbles, referenceMarkers, printing };
+  assert.equal(CadQualityChecker.check(cadStandard).score, 100);
+
+  const templatePackage = generateExamDrawingTemplates({ includeDefaults: false, views: [{ templateId: 'floor1' }] });
+  assert.equal(templatePackage.cadStandard.printing.formats.includes('PDF'), true);
+  assert.equal(templatePackage.cadQuality.isValid, true);
+  assert.equal(templatePackage.metadata.architecturalCadStandardEngine, true);
 });
