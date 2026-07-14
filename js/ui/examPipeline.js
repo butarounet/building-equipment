@@ -9,6 +9,7 @@ const defaultDeps = () => ({
   generateExam: globalThis.generateExam || optionalRequire('../generator/examGenerator').generateExam,
   generateDrawings: globalThis.generateDrawings || optionalRequire('../generator/drawingGenerator').generateDrawings,
   generateAnswerSheets: globalThis.generateAnswerSheets || optionalRequire('../generator/answerSheetGenerator').generateAnswerSheets,
+  generateExamPackage: globalThis.generateExamPackage || optionalRequire('../generator/examPackageGenerator').generateExamPackage,
   checkExamConsistency: globalThis.checkExamConsistency || optionalRequire('../quality/examConsistencyEngine').checkExamConsistency
 });
 class ExamPipeline {
@@ -16,8 +17,8 @@ class ExamPipeline {
   progress(step, detail = {}) { this.onProgress({ step, ...detail }); }
   requireGenerator(name) { if (typeof this.dependencies[name] !== 'function') throw new Error(`${name} is not available.`); return this.dependencies[name]; }
   generateModelAnswers(exam, answerSheets) { return { title: '資料3 模範解答 / 資料4 設備模範図', answers: commonQuestions(exam?.common).map((q) => ({ questionId: q.questionId, title: q.title, room: q.autoSelection?.roomType || q.relatedRooms?.[0], systems: q.relatedSystems || [], answerSheet: 'AnswerSheet4' })), references: answerSheets?.questionAnswerMap || [] }; }
-  createPrintPackage(snapshot) { return { printable: !!snapshot.consistency?.passed, blockedReason: snapshot.consistency?.passed ? null : '品質チェック失敗のためPDF生成は禁止されています。', pdfSources: snapshot.consistency?.passed ? ['exam', 'buildingDrawing', 'equipmentDrawing', 'blankDrawing', 'answerSheets', 'modelAnswers'] : [], svgSources: ['buildingDrawing', 'equipmentDrawing', 'blankDrawing'], json: snapshot }; }
-  createPreviewPackage(snapshot) { return { ready: true, sections: ['building', 'equipment', 'materials', 'questions', 'buildingDrawing', 'blankDrawing', 'equipmentDrawing', 'answerSheets', 'modelAnswers', 'consistency', 'printPackage'], summary: { printable: !!snapshot.printPackage?.printable, passed: !!snapshot.consistency?.passed, score: snapshot.consistency?.score ?? null, updatedAt: snapshot.updatedAt } }; }
+  createPrintPackage(snapshot) { const artifacts = snapshot.examPackage?.artifacts || []; return { printable: !!snapshot.consistency?.passed, blockedReason: snapshot.consistency?.passed ? null : '品質チェック失敗のためPDF生成は禁止されています。', pdfSources: snapshot.consistency?.passed ? artifacts.filter((a) => a.type === 'pdf').map((a) => a.path) : [], svgSources: artifacts.filter((a) => a.type === 'svg').map((a) => a.path), jsonSources: artifacts.filter((a) => a.type === 'json').map((a) => a.path), json: snapshot }; }
+  createPreviewPackage(snapshot) { const artifacts = snapshot.examPackage?.artifacts || []; return { ready: true, dummy: false, sections: ['examBooklet', 'building', 'equipment', 'materials', 'questions', 'buildingDrawing', 'blankDrawing', 'equipmentDrawing', 'answerSheets', 'modelAnswers', 'consistency', 'printPackage'], artifacts: artifacts.map(({ id, type, path, checksum }) => ({ id, type, path, checksum })), summary: { printable: !!snapshot.printPackage?.printable, passed: !!snapshot.consistency?.passed, score: snapshot.consistency?.score ?? null, updatedAt: snapshot.updatedAt } }; }
   async generate(options = {}) {
     this.progress('Building...'); const plan = this.dependencies.planHotelProject ? this.dependencies.planHotelProject(options.planner || {}) : null; const building = this.requireGenerator('generateBuilding')({ plan, options: options.building }); this.state.set('building', building);
     this.progress('Equipment...'); const equipment = this.requireGenerator('generateEquipment')(building, options.equipment); this.state.set('equipment', equipment);
@@ -29,6 +30,7 @@ class ExamPipeline {
     this.progress('AnswerSheet...'); const answerSheets = this.requireGenerator('generateAnswerSheets')({ exam, materials, drawings, options: { includeBlankPlanBackground: true, ...(options.answerSheets || {}) } }); this.state.set('answerSheets', answerSheets);
     this.progress('ModelAnswer...'); const modelAnswers = this.dependencies.generateModelAnswers ? this.dependencies.generateModelAnswers({ exam, building, equipment, drawings, answerSheets }) : this.generateModelAnswers(exam, answerSheets); this.state.set('modelAnswers', modelAnswers);
     this.progress('Consistency...'); const consistency = this.requireGenerator('checkExamConsistency')({ exam, building, equipment, materials, questions: this.state.get('questions'), drawings, answerSheets, modelAnswers }); this.state.set('consistency', consistency);
+    if (typeof this.dependencies.generateExamPackage === 'function') { try { this.state.set('examPackage', this.dependencies.generateExamPackage({ exam, building, equipment, materials, drawings, answerSheets, modelAnswers })); } catch (error) { this.state.set('examPackage', { error: error.message, consistencyReport: error.consistencyReport }); } }
     this.progress('Print...'); this.state.set('printPackage', this.createPrintPackage(this.state.snapshot));
     this.progress('Preview...'); this.state.set('previewPackage', this.createPreviewPackage(this.state.snapshot));
     this.progress('Complete', { passed: consistency.passed }); return this.state.snapshot;

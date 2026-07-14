@@ -1,6 +1,6 @@
 class ExamState {
   constructor(initial = {}) { this.version = 1; this.data = this.createEmptyState(); this.listeners = new Set(); if (Object.keys(initial).length) this.replace(initial); }
-  createEmptyState() { return { exam: null, building: null, equipment: null, materials: null, questions: null, buildingDrawing: null, equipmentDrawing: null, blankDrawing: null, answerSheets: null, modelAnswers: null, consistency: null, printPackage: null, previewPackage: null, updatedAt: null }; }
+  createEmptyState() { return { exam: null, building: null, equipment: null, materials: null, questions: null, buildingDrawing: null, equipmentDrawing: null, blankDrawing: null, answerSheets: null, modelAnswers: null, examPackage: null, consistency: null, printPackage: null, previewPackage: null, updatedAt: null }; }
   get snapshot() { return { ...this.data }; }
   get(key) { return this.data[key]; }
   set(key, value) { if (!Object.prototype.hasOwnProperty.call(this.data, key)) throw new Error(`Unknown ExamState key: ${key}`); this.data = { ...this.data, [key]: value, updatedAt: new Date().toISOString() }; this.emit(key); return this.snapshot; }
