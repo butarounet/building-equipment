@@ -99,8 +99,8 @@ SVG図面は、Web表示とA4印刷の両方で判読できることを前提と
 
 ## Answer Sheet Generator / 答案用紙出力
 
-- 役割: Exam Generatorの`questionId`、`answerType`、`answerSheetAreaId`、`drawingRequirements`、`answerSheetReferences`、`electiveSections`と、Material Generatorの資料5、Drawing Generatorの`blankPlans`を参照し、受験者が直接記入・作図する空欄中心の答案用紙セットを生成する。
-- セット構造: `answerSheetSetId`、`examId`、`sheetSizePolicy`、`commonFields`、`mandatoryPlanningSheet`、`hvacSheet`、`plumbingSheet`、`electricalSheet`、`commonDescriptionSheet`、`questionAnswerMap`、`metadata`で構成する。
+- 役割: Exam Generatorの`questionId`、`answerType`、`answerSheetAreaId`、`drawingRequirements`、`answerSheetReferences`、`selection`と`common`と、Material Generatorの資料5、Drawing Generatorの`blankPlans`を参照し、受験者が直接記入・作図する空欄中心の答案用紙セットを生成する。
+- セット構造: `answerSheetSetId`、`examId`、`sheetSizePolicy`、`commonFields`、`answerSheet1`、`answerSheet2`、`answerSheet3`、`answerSheet4`、`questionAnswerMap`、`metadata`で構成する。
 - 必須問題答案用紙: 建築設備基本計画11問に対し、問題番号、設問見出し、記述欄、計算欄、選択欄、簡易図示欄、単位記入欄、算定根拠欄を持つ。記述、計算、選択、図示の`answerType`に合わせて欄を有効化する。
 - 空調答案用紙: 能力算定表、熱源・冷温水・冷却水・外気処理等の系統図欄、平面図欄、部分詳細図欄、機器表・凡例・制御説明欄を持つ。
 - 衛生答案用紙: 給水・給湯・排水能力算定表、飲料水・雑用水・給湯・返湯・排水・雨水・通気・消火の系統図欄、平面図欄、設備室詳細図欄、機器表・凡例・雨水利用・消火設備説明欄を持つ。

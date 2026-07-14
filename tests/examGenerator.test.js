@@ -25,12 +25,13 @@ test('generateExam() が試験データを生成する', () => {
   assert.ok(exam.projectTitle);
 });
 
-test('必須問題11問と各選択設備5問を生成する', () => {
+test('必須問題11問と各選択設備2問、共通3問を生成する', () => {
   const { exam } = fixture();
   assert.equal(exam.mandatoryQuestions.length, 11);
-  assert.equal(exam.electiveSections.hvac.length, 5);
-  assert.equal(exam.electiveSections.plumbing.length, 5);
-  assert.equal(exam.electiveSections.electrical.length, 5);
+  assert.equal(exam.selection.hvac.length, 2);
+  assert.equal(exam.selection.plumbing.length, 2);
+  assert.equal(exam.selection.electrical.length, 2);
+  assert.equal(exam.common.length, 3);
   assert.ok(exam.mandatoryQuestions.filter((q) => q.answerType === 'description').length >= 6);
   assert.ok(exam.mandatoryQuestions.filter((q) => q.answerType === 'calculation').length >= 2);
 });
@@ -64,8 +65,8 @@ test('validateExam() が正常に動く', () => {
   const input = fixture();
   const validation = validateExam(input.exam, input);
   assert.equal(validation.isValid, true, validation.errors.join('\n'));
-  assert.equal(validation.checks.mandatoryCount, true);
-  assert.equal(validation.checks.electiveCounts, true);
+  assert.equal(validation.checks.selectionCounts, true);
+  assert.equal(validation.checks.commonCount, true);
 });
 
 test('無効な建物データを検出する', () => {
