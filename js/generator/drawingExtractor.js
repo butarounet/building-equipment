@@ -19,7 +19,7 @@ function targetRooms(plan, question) {
   const key = norm(question?.autoSelection?.roomType || question?.relatedRooms?.[0] || question?.title);
   const rooms = arr(plan?.rooms);
   const matched = rooms.filter((r) => key && (norm(r.name).includes(key) || key.includes(norm(r.name))));
-  return matched.length ? matched : rooms.slice(0, Math.min(2, rooms.length));
+  return matched.length ? matched.slice(0, 2) : rooms.slice(0, Math.min(2, rooms.length));
 }
 function discipline(question) {
   if (question?.questionId === 'Q04' || /plumbing|衛生/.test(question?.type || question?.category || '')) return 'plumbing';
