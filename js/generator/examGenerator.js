@@ -9,7 +9,7 @@ function seedFrom(building) { return String(building?.name || '').split('').redu
 function pick(arr, n) { return arr[n % arr.length]; }
 
 function makeQuestion(id, number, category, title, prompt, answerType, extra = {}) {
-  return { questionId: id, id, number, category, title, prompt, answerType, type: extra.type, requiredPoints: extra.requiredPoints || 3, conditions: extra.conditions || [], relatedSystems: extra.relatedSystems || [], relatedRooms: extra.relatedRooms || [], drawingRequirements: extra.drawingRequirements || [], difficulty: extra.difficulty || 'standard', answerSheetAreaId: extra.answerSheetAreaId || 'basic-plan-description' };
+  return { questionId: id, id, number, category, title, prompt, answerType, type: extra.type, requiredPoints: extra.requiredPoints || 3, conditions: extra.conditions || [], relatedSystems: extra.relatedSystems || [], relatedRooms: extra.relatedRooms || [], drawingRequirements: extra.drawingRequirements || [], difficulty: extra.difficulty || 'standard', template: extra.template, autoSelection: extra.autoSelection, answerSheetAreaId: extra.answerSheetAreaId || 'basic-plan-description' };
 }
 
 function generateMandatory(b, e) {
@@ -54,44 +54,106 @@ function generateSelectionQuestions(floor) {
   };
 }
 
-function commonQuestion(id, number, category, title, prompt, type, relatedSystems, relatedRooms, conditions) {
-  return makeQuestion(id, number, category, title, prompt, 'diagram', {
-    conditions,
-    relatedSystems,
-    relatedRooms,
+function hasRoom(b, key) { return !!b?.rooms?.[key]; }
+function contextScore(ctx, candidate, offset = 0) {
+  const text = [ctx.buildingUse, ctx.hotelType, ctx.difficulty, candidate.id, candidate.room, ...(candidate.systemHints || [])].join('|');
+  return text.split('').reduce((sum, ch, i) => sum + ch.charCodeAt(0) * (i + 3 + offset), 0);
+}
+function chooseCandidate(ctx, candidates, offset = 0) {
+  return candidates
+    .map((candidate) => ({ candidate, score: (candidate.when?.(ctx) ? 1000 : 0) + contextScore(ctx, candidate, offset) % 997 }))
+    .sort((a, b) => b.score - a.score)[0].candidate;
+}
+function buildCommonQuestion(id, number, category, type, candidate, ctx, extra = {}) {
+  const roomText = candidate.room || '指定室';
+  const prompt = candidate.prompt({ ...ctx, roomText, candidate });
+  return makeQuestion(id, number, category, candidate.title, prompt, 'diagram', {
+    conditions: candidate.conditions,
+    relatedSystems: candidate.relatedSystems,
+    relatedRooms: [roomText, ...(candidate.relatedRooms || [])],
     answerSheetAreaId: `answer-sheet-4-${id.toLowerCase()}`,
-    drawingRequirements: ['AnswerSheet4へ出力'],
-    type
+    drawingRequirements: ['AnswerSheet4へ出力', ...(candidate.drawingRules || [])],
+    type,
+    difficulty: ctx.difficulty,
+    template: 'auto',
+    autoSelection: {
+      generator: extra.generator,
+      selectedCandidateId: candidate.id,
+      buildingUse: ctx.buildingUse,
+      roomType: roomText,
+      equipmentCondition: candidate.systemHints || [],
+      examDifficulty: ctx.difficulty,
+      drawingRules: candidate.drawingRules || []
+    }
   });
 }
 
-function generateCommonQuestions(floor) {
-  return [
-    commonQuestion('Q03', 3, '共通問題（空調）', '客室階FCU配管図', `${floor}階客室階のFCU配管図を作成し、冷水・温水の四管式、リバースリターン、ドレン、電動二方弁、立管（C, CR, H, HR, D）を明示せよ。`, 'hvac-room-detail', ['guestroom-fcu', 'central-heat-source'], ['客室', '廊下', 'PS'], ['FCU', '冷水', '温水', '四管式', 'リバースリターン', 'ドレン', '電動二方弁', '立管(C,CR,H,HR,D)']),
-    commonQuestion('Q04', 4, '共通問題（衛生）', '便所配管図', '共用便所の給水、給湯、排水、通気、ループ通気、PS接続、器具配管を明示した配管図を作成せよ。', 'plumbing-detail', ['water-supply', 'hot-water', 'drainage'], ['便所', 'PS'], ['給水', '給湯', '排水', '通気', 'ループ通気', 'PS接続', '器具配管']),
-    commonQuestion('Q05', 5, '共通問題（電気）', '照明設計', '代表階について、照明台数計算、照明配置、非常照明、誘導灯、感知器、非常放送、コンセント、スイッチを計画し図示せよ。', 'electrical-design', ['lighting-control', 'emergency-generator', 'bems'], ['客室', '廊下', 'EPS'], ['照明台数計算', '照明配置', '非常照明', '誘導灯', '感知器', '非常放送', 'コンセント', 'スイッチ'])
-  ];
+function commonContext(b, e, floor, plan) {
+  const hotelType = plan?.hotelTypeName || plan?.hotelType || b.planningSource?.hotelTypeName || b.planningSource?.hotelType || '都市型ホテル';
+  const area = b.totalFloorArea?.value || 0;
+  const difficulty = area >= 25000 || /国際|会議|フルサービス/.test(hotelType) ? 'hard' : area >= 12000 ? 'standard' : 'basic';
+  return { buildingUse: b.use || 'ホテル', hotelType, rooms: b.rooms || {}, equipment: e || {}, floor, difficulty };
 }
+
+function generateHVACCommonQuestion(ctx) {
+  const candidates = [
+    { id: 'fcu-four-pipe', title: '客室FCU四管式配管詳細図', room: '客室', when: (c) => hasRoom(c, 'guestRooms') && JSON.stringify(c.equipment).includes('guestroom-fcu'), systemHints: ['guestroom-fcu', 'four-pipe'], relatedSystems: ['guestroom-fcu', 'central-heat-source'], conditions: ['FCU', '冷水', '温水', '四管式', 'リバースリターン', 'ドレン', '電動二方弁', '立管(C,CR,H,HR,D)'], drawingRules: ['冷水往還・温水往還・ドレンを分離表記', '弁類と立管記号を明示'], prompt: ({ floor, roomText }) => `${floor}階${roomText}を対象に、FCU四管式配管詳細図を作成せよ。冷水・温水往還、リバースリターン、ドレン、電動二方弁、立管（C, CR, H, HR, D）を明示すること。` },
+    { id: 'fcu-two-pipe', title: 'FCU二管式配管詳細図', room: '客室', when: (c) => hasRoom(c, 'guestRooms'), systemHints: ['guestroom-fcu', 'two-pipe'], relatedSystems: ['guestroom-fcu'], conditions: ['FCU', '二管式', '冷温水切替', 'ドレン', '自動制御弁'], drawingRules: ['二管式の季節切替を注記', 'ドレン勾配を明示'], prompt: ({ floor, roomText }) => `${floor}階${roomText}を対象に、FCU二管式配管詳細図を作成せよ。冷温水切替、ドレン、自動制御弁、保守スペースを示すこと。` },
+    { id: 'ahu-vav', title: 'AHU+VAVダクト詳細図', room: '宴会場', when: (c) => hasRoom(c, 'banquetHall') && c.difficulty === 'hard', systemHints: ['central-heat-source', 'vav'], relatedSystems: ['central-heat-source', 'bems'], conditions: ['AHU', 'VAV', '給気', '還気', '外気', '制御'], drawingRules: ['VAVゾーンと制御点を明示', '防火区画貫通を注記'], prompt: ({ roomText }) => `${roomText}を対象に、AHU+VAV方式のダクト詳細図を作成せよ。給気・還気・外気、VAVゾーン、制御点、FDを示すこと。` },
+    { id: 'kitchen-exhaust', title: '厨房排気ダクト詳細図', room: '厨房', when: (c) => hasRoom(c, 'kitchen'), systemHints: ['kitchen-ventilation'], relatedSystems: ['kitchen-ventilation'], conditions: ['フード', '排気ダクト', '給気', 'グリス対策', '防火ダンパー'], drawingRules: ['清掃口と防火措置を明示', '給排気バランスを注記'], prompt: ({ roomText }) => `${roomText}を対象に、厨房排気ダクト詳細図を作成せよ。フード、排気ダクト、給気、清掃口、FD、臭気拡散防止を示すこと。` },
+    { id: 'outdoor-air-unit', title: '外調機まわりダクト詳細図', room: '共用部', when: () => true, systemHints: ['outdoor-air-supply'], relatedSystems: ['outdoor-air-supply'], conditions: ['外調機', '外気', '給気', 'フィルタ', '点検スペース'], drawingRules: ['点検スペースとフィルタ交換方向を明示'], prompt: ({ roomText }) => `${roomText}を対象に、外調機まわりのダクト詳細図を作成せよ。外気取入口、給気、フィルタ、点検スペース、制御弁を示すこと。` }
+  ];
+  return buildCommonQuestion('Q03', 3, '共通問題（空調詳細図）', 'hvac-detail', chooseCandidate(ctx, candidates, 3), ctx, { generator: 'HVACCommonQuestionGenerator' });
+}
+
+function generatePlumbingCommonQuestion(ctx) {
+  const candidates = [
+    { id: 'toilet-loop-vent', title: '便所配管詳細図', room: '男子便所', when: () => true, systemHints: ['water-supply', 'drainage', 'loop-vent'], relatedSystems: ['water-supply', 'hot-water', 'drainage'], conditions: ['給水', '給湯', '排水', '通気', 'ループ通気', 'PS接続', '器具配管'], drawingRules: ['ループ通気とPS接続を明示', '器具排水負荷を注記'], prompt: ({ roomText }) => `${roomText}を対象に、給水、給湯、排水、ループ通気、PS接続、器具配管を明示した衛生配管詳細図を作成せよ。` },
+    { id: 'guestroom-ub', title: '客室UB配管詳細図', room: '客室UB', when: (c) => hasRoom(c, 'guestRooms'), systemHints: ['hot-water', 'drainage'], relatedSystems: ['water-supply', 'hot-water', 'drainage'], conditions: ['給水', '給湯', '排水', '伸頂通気', 'UB接続'], drawingRules: ['UBまわりの接続高さを注記', '伸頂通気を明示'], prompt: ({ floor, roomText }) => `${floor}階${roomText}を対象に、給水、給湯、排水、伸頂通気、PS接続を含む衛生配管詳細図を作成せよ。` },
+    { id: 'kitchen-grease', title: '厨房グリーストラップ配管詳細図', room: '厨房', when: (c) => hasRoom(c, 'kitchen'), systemHints: ['drainage', 'grease-trap'], relatedSystems: ['drainage'], conditions: ['厨房排水', 'グリーストラップ', '清掃口', '通気', '防臭'], drawingRules: ['グリーストラップと清掃口を明示', '厨房系統分離を注記'], prompt: ({ roomText }) => `${roomText}を対象に、厨房排水、グリーストラップ、通気、清掃口、防臭措置を含む衛生配管詳細図を作成せよ。` },
+    { id: 'spa-bath', title: '浴室・SPA配管詳細図', room: 'SPA', when: (c) => hasRoom(c, 'spa'), systemHints: ['hot-water', 'drainage'], relatedSystems: ['hot-water', 'drainage'], conditions: ['給湯', '返湯', '排水', '逃し通気', '防水区画'], drawingRules: ['湿式室の防水区画を注記', '返湯循環を明示'], prompt: ({ roomText }) => `${roomText}を対象に、給湯、返湯、排水、逃し通気、防水区画を含む衛生配管詳細図を作成せよ。` }
+  ];
+  return buildCommonQuestion('Q04', 4, '共通問題（衛生詳細図）', 'plumbing-detail', chooseCandidate(ctx, candidates, 4), ctx, { generator: 'PlumbingCommonQuestionGenerator' });
+}
+
+function generateElectricalCommonQuestion(ctx) {
+  const candidates = [
+    { id: 'banquet-lighting', title: '宴会場電気設備図', room: '宴会場', when: (c) => hasRoom(c, 'banquetHall'), systemHints: ['lighting-control', 'emergency-generator'], relatedSystems: ['lighting-control', 'emergency-generator', 'bems'], conditions: ['照明器具', '非常照明', '誘導灯', '感知器', '非常放送', 'コンセント', 'スイッチ', '照明台数計算'], drawingRules: ['感知器は警戒面積を満足', '非常放送スピーカーは水平距離条件を満足', '誘導灯は避難経路に合わせ配置'], prompt: ({ roomText }) => `${roomText}を対象に、照明器具、非常照明、誘導灯、感知器、非常放送スピーカー、コンセント、スイッチ、分電盤を配置し、照明台数計算を示せ。感知器の警戒面積、スピーカー水平距離、避難経路上の誘導灯配置を満足させること。` },
+    { id: 'guestroom-electrical', title: '客室電気設備図', room: '客室', when: (c) => hasRoom(c, 'guestRooms'), systemHints: ['lighting-control'], relatedSystems: ['lighting-control', 'bems'], conditions: ['照明器具', 'コンセント', 'スイッチ', '感知器', '非常放送'], drawingRules: ['ベッドまわりのスイッチとコンセントを明示', '感知器警戒面積を満足'], prompt: ({ floor, roomText }) => `${floor}階${roomText}を対象に、照明器具、コンセント、スイッチ、感知器、非常放送スピーカーを配置し、照度または照明台数計算を示せ。` },
+    { id: 'restaurant-lighting', title: 'レストラン電気設備図', room: 'レストラン', when: (c) => hasRoom(c, 'restaurant'), systemHints: ['lighting-control'], relatedSystems: ['lighting-control', 'emergency-generator'], conditions: ['照明器具', '非常照明', '誘導灯', '感知器', 'コンセント', '照度計算'], drawingRules: ['客席と厨房境界の回路区分を注記', '誘導灯は避難経路に合わせ配置'], prompt: ({ roomText }) => `${roomText}を対象に、照明器具、非常照明、誘導灯、感知器、コンセント、スイッチを配置し、照度計算を示せ。` },
+    { id: 'parking-electrical', title: '地下駐車場電気設備図', room: '地下駐車場', when: (c) => /地下/.test(JSON.stringify(c.rooms)), systemHints: ['emergency-generator'], relatedSystems: ['emergency-generator'], conditions: ['照明器具', '非常照明', '誘導灯', '感知器', '非常放送', '分電盤'], drawingRules: ['避難経路と誘導灯を整合', '感知器警戒面積を満足'], prompt: ({ roomText }) => `${roomText}を対象に、照明器具、非常照明、誘導灯、感知器、非常放送スピーカー、分電盤を配置し、保安負荷区分を示せ。` }
+  ];
+  return buildCommonQuestion('Q05', 5, '共通問題（電気設備図）', 'electrical-equipment', chooseCandidate(ctx, candidates, 5), ctx, { generator: 'ElectricalCommonQuestionGenerator' });
+}
+
+function generateCommonQuestions({ building, equipment, floor, plan }) {
+  const ctx = commonContext(building, equipment, floor, plan);
+  return {
+    q03: generateHVACCommonQuestion(ctx),
+    q04: generatePlumbingCommonQuestion(ctx),
+    q05: generateElectricalCommonQuestion(ctx)
+  };
+}
+function commonList(common) { return Array.isArray(common) ? common : Object.values(common || {}); }
+
 
 function generateExam({ plan, building, equipment, materials, drawings, options = {} } = {}) {
   const b = root(building, 'building'); const e = root(equipment, 'equipment');
   if (!b) throw new Error('buildingが存在しません。'); if (!e) throw new Error('equipmentが存在しません。');
   const seed = seedFrom(b); const applicableLawDate = options.applicableLawDate || '2026-01-01';
   const floor = pick(['2', '3', '4-10'], seed); const projectTitle = pick([`${b.rooms?.banquetHall?.area?.value ? '宴会場' : '会議室'}及びレストランを併設した都市型ホテル`, `地域交流機能を備えた複合シティホテル`, `国際滞在客に対応するフルサービスホテル`], seed);
-  const material5 = material(materials, 'material-5');
   const calculationConditions = { outdoorAir: { summer: '34℃DB/27℃WB', winter: '2℃DB' }, indoor: { guestRoom: '26℃・50%', banquet: '25℃・50%' }, airDensity: '1.2kg/m3', waterSpecificHeat: '4.19kJ/(kg・K)', chilledWaterDeltaT: '5℃', hotWaterDeltaT: '10℃', enthalpyDifference: '52kJ/kg', lightingLoad: '12W/m2', receptacleLoad: '18VA/m2', demandFactor: 0.72, powerFactor: 0.9, waterPerPersonPerDay: '350L/人日', hotWaterPerGuest: '55L/h', simultaneityFactor: 0.65, safetyFactor: 1.15 };
-  const mandatoryQuestions = generateMandatory(b, e);
   const selection = generateSelectionQuestions(floor);
-  const common = generateCommonQuestions(floor);
+  const common = generateCommonQuestions({ building: b, equipment: e, floor, plan });
   const drawingRequirements = { disciplines: ['空調・換気設備', '給排水衛生設備', '電気設備'], targetDrawings: ['系統図', '平面図', '部分詳細図', '機器表', '凡例'], targetFloors: [floor], scale: { plan: '1/200', detail: '1/50', system: '図示' }, sheetSize: drawings?.sheetSize || 'A3-landscape', systemDiagrams: ['熱源', '給排水', '受変電'], legends: drawings?.legends?.map((l) => l.symbolId) || [], symbols: ['FD', 'VD', 'PS', 'EPS', 'DS', 'SP', 'ELB'], requiredNotes: ['防火区画貫通処理', '維持管理スペース', '系統名・凡例'], omittableItems: ['軽微な寸法', '家具詳細'], blankPlanReferences: (drawings?.blankPlans || []).map((d) => d.drawingId), answerSheetReferences: (drawings?.answerSheets || []).map((s) => s.sheetId) };
-  const answerSheetReferences = { mandatory: material5?.answerSheets?.[0]?.sheetId || 'basic-plan', answerSheet1: 'selection-hvac', answerSheet2: 'selection-plumbing', answerSheet3: 'selection-electrical', answerSheet4: 'common', hvac: 'selection-hvac', plumbing: 'selection-plumbing', electrical: 'selection-electrical', common: 'common', description: 'description', calculation: 'calculation', systemDiagram: 'systemDiagram', plan: 'planDrawing', equipmentSchedule: 'equipmentSchedule', legend: 'legend' };
-  return { examId: `exam-${Date.now()}`, version: '1.0', title: '建築設備士試験 第二次試験（設計製図） 模擬試験', projectTitle, createdAt: new Date().toISOString(), durationMinutes: 330, applicableLawDate, cover: { examName: '建築設備士試験 第二次試験（設計製図）', mockLabel: '模擬試験', designTaskName: projectTitle, bookletLabel: '問題集', duration: '330分', examineeNumberField: '受験番号欄', nameField: '氏名欄', noticeGuide: '注意事項を確認してから解答すること。', learningLabel: '学習用模擬試験' }, instructions: ['問題集は表紙、注意事項、設計課題、計画条件、必須問題、選択問題、製図要求事項で構成する。', '建築設備基本計画は必須問題である。', '選択問題は空調、衛生、電気の各2問で構成する。', '共通問題Q03、Q04、Q05はAnswerSheet4に解答する。', '黒鉛筆又はシャープペンを使用する。', 'フリーハンド作図可。', `適用法令日は${applicableLawDate}とする。`, '問題文と図面の整合を確認すること。', '模範解答は問題集に含めない。'], designTask: { buildingUse: b.use, hotelType: plan?.hotelTypeName || plan?.hotelType || b.planningSource?.hotelTypeName || b.planningSource?.hotelType || '都市型ホテル', concept: b.concept, primaryAdditionalUses: ['宴会場', 'レストラン', '厨房', 'SPA'].filter((name) => JSON.stringify(b.rooms || {}).includes(name === 'SPA' ? 'spa' : name === '厨房' ? 'kitchen' : name === '宴会場' ? 'banquetHall' : 'restaurant')), locationConditions: b.siteCondition, designFocus: ['安全性', '省エネルギー', 'BCP', '維持管理性', '宿泊快適性'] }, planningConditions: { buildingSummary: b.name, use: b.use, fireServiceUseCategory: 'ホテル（消防法施行令別表第一(5)項イ相当）', location: b.location, zoning: b.zoning, siteArea: b.siteArea, buildingArea: b.buildingArea, totalFloorArea: b.totalFloorArea, structure: b.structure, floors: b.floors, penthouse: b.floors?.penthouse, basement: b.floors?.basement, guestRooms: b.rooms?.guestRooms, users: b.occupancy, parking: { bays: Math.max(20, Math.ceil((b.rooms?.guestRooms || 0) * 0.18)) }, infrastructure: material(materials, 'material-2')?.utilityConnectionPoints || {}, operation: { hours: '宿泊24時間、料飲・宴会は時間帯運用' }, disasterPrevention: { fireCompartment: '用途・竪穴区画を設定', smokeControl: '避難安全と整合' }, energySaving: { target: 'ZEB Oriented相当を検討' }, bcp: { emergencyPower: capText(sys(e, 'emergencyPower')), water: '受水槽と重要系統を優先' } }, mandatoryQuestions, selection, common, electiveSections: selection, drawingRequirements, calculationConditions, answerSheetReferences, metadata: { generator: 'examGenerator', schemaVersion: '1.0.0', sourceMaterialIds: listMaterials(materials).map((m) => m.materialId), drawingSetId: drawings?.drawingSetId, noModelAnswer: true } };
+  const answerSheetReferences = { answerSheet1: 'selection-hvac', answerSheet2: 'selection-plumbing', answerSheet3: 'selection-electrical', answerSheet4: 'common', hvac: 'selection-hvac', plumbing: 'selection-plumbing', electrical: 'selection-electrical', common: 'common', description: 'description', calculation: 'calculation', systemDiagram: 'systemDiagram', plan: 'planDrawing', equipmentSchedule: 'equipmentSchedule', legend: 'legend' };
+  return { examId: `exam-${Date.now()}`, version: '1.0', title: '建築設備士試験 第二次試験（設計製図） 模擬試験', projectTitle, createdAt: new Date().toISOString(), durationMinutes: 330, applicableLawDate, cover: { examName: '建築設備士試験 第二次試験（設計製図）', mockLabel: '模擬試験', designTaskName: projectTitle, bookletLabel: '問題集', duration: '330分', examineeNumberField: '受験番号欄', nameField: '氏名欄', noticeGuide: '注意事項を確認してから解答すること。', learningLabel: '学習用模擬試験' }, instructions: ['問題集は表紙、注意事項、設計課題、計画条件、選択問題、共通問題、製図要求事項で構成する。', '選択問題は空調、衛生、電気の各2問で構成する。', '共通問題Q03、Q04、Q05はAnswerSheet4に解答する。', '黒鉛筆又はシャープペンを使用する。', 'フリーハンド作図可。', `適用法令日は${applicableLawDate}とする。`, '問題文と図面の整合を確認すること。', '模範解答は問題集に含めない。'], designTask: { buildingUse: b.use, hotelType: plan?.hotelTypeName || plan?.hotelType || b.planningSource?.hotelTypeName || b.planningSource?.hotelType || '都市型ホテル', concept: b.concept, primaryAdditionalUses: ['宴会場', 'レストラン', '厨房', 'SPA'].filter((name) => JSON.stringify(b.rooms || {}).includes(name === 'SPA' ? 'spa' : name === '厨房' ? 'kitchen' : name === '宴会場' ? 'banquetHall' : 'restaurant')), locationConditions: b.siteCondition, designFocus: ['安全性', '省エネルギー', 'BCP', '維持管理性', '宿泊快適性'] }, planningConditions: { buildingSummary: b.name, use: b.use, fireServiceUseCategory: 'ホテル（消防法施行令別表第一(5)項イ相当）', location: b.location, zoning: b.zoning, siteArea: b.siteArea, buildingArea: b.buildingArea, totalFloorArea: b.totalFloorArea, structure: b.structure, floors: b.floors, penthouse: b.floors?.penthouse, basement: b.floors?.basement, guestRooms: b.rooms?.guestRooms, users: b.occupancy, parking: { bays: Math.max(20, Math.ceil((b.rooms?.guestRooms || 0) * 0.18)) }, infrastructure: material(materials, 'material-2')?.utilityConnectionPoints || {}, operation: { hours: '宿泊24時間、料飲・宴会は時間帯運用' }, disasterPrevention: { fireCompartment: '用途・竪穴区画を設定', smokeControl: '避難安全と整合' }, energySaving: { target: 'ZEB Oriented相当を検討' }, bcp: { emergencyPower: capText(sys(e, 'emergencyPower')), water: '受水槽と重要系統を優先' } }, selection, common, electiveSections: selection, drawingRequirements, calculationConditions, answerSheetReferences, metadata: { generator: 'examGenerator', schemaVersion: '1.0.0', sourceMaterialIds: listMaterials(materials).map((m) => m.materialId), drawingSetId: drawings?.drawingSetId, noModelAnswer: true } };
 }
 
 function createQuestionFingerprint(q) { const text = [q.title, q.prompt, q.answerType, ...(q.conditions || []), ...(q.relatedSystems || []), ...(q.relatedRooms || [])].join(' '); const words = text.replace(/[、。・（）()]/g, ' ').split(/\s+/).filter(Boolean); return { id: q.questionId, title: q.title, answerType: q.answerType, systems: q.relatedSystems || [], rooms: q.relatedRooms || [], keywords: [...new Set(words.filter((w) => w.length >= 2))].slice(0, 20), structure: (q.prompt || '').replace(/[0-9０-９]+/g, '#').slice(0, 80) }; }
 function similarity(a, b) { const ak = new Set(a.keywords); const bk = new Set(b.keywords); const inter = [...ak].filter((x) => bk.has(x)).length; const union = new Set([...ak, ...bk]).size || 1; return inter / union + (a.title === b.title ? 0.5 : 0) + (a.answerType === b.answerType ? 0.05 : 0); }
 function checkQuestionDuplication(questions) { const warnings = []; const fps = (questions || []).map(createQuestionFingerprint); for (let i = 0; i < fps.length; i += 1) for (let j = i + 1; j < fps.length; j += 1) if (similarity(fps[i], fps[j]) >= 0.72 || fps[i].structure === fps[j].structure) warnings.push(`${fps[i].id}と${fps[j].id}が過度に類似している可能性があります。`); return { hasDuplication: warnings.length > 0, warnings, fingerprints: fps }; }
-function validateExam(exam, sources = {}) { const errors = []; const warnings = []; const b = root(sources.building, 'building'); const selection = exam?.selection || exam?.electiveSections || {}; const common = exam?.common || []; const allQ = [...(exam?.mandatoryQuestions || []), ...Object.values(selection).flat(), ...common]; const validFloors = floorIds(sources.drawings); const checks = { cover: !!exam?.cover, instructions: (exam?.instructions || []).length > 0, designTask: !!exam?.designTask?.buildingUse, planningConditions: !!exam?.planningConditions?.totalFloorArea, selectionCounts: ['hvac', 'plumbing', 'electrical'].every((k) => selection?.[k]?.length === 2), commonCount: common.length === 3, answerSheet4Exists: exam?.answerSheetReferences?.answerSheet4 === 'common' || !!exam?.answerSheetReferences?.common, q03Hvac: common.find((q) => q.questionId === 'Q03')?.type === 'hvac-room-detail', q04Plumbing: common.find((q) => q.questionId === 'Q04')?.type === 'plumbing-detail', q05Electrical: common.find((q) => q.questionId === 'Q05')?.type === 'electrical-design', questionNumbering: selection.hvac?.map((q) => q.questionId).join(',') === 'A01,A02' && selection.plumbing?.map((q) => q.questionId).join(',') === 'B01,B02' && selection.electrical?.map((q) => q.questionId).join(',') === 'C01,C02' && common.map((q) => q.questionId).join(',') === 'Q03,Q04,Q05', actualExamStructure: true, calculationConditions: !!exam?.calculationConditions && Object.keys(exam.calculationConditions).length > 0, drawingConsistency: (exam?.drawingRequirements?.blankPlanReferences || []).every((id) => (sources.drawings?.blankPlans || []).some((d) => d.drawingId === id)), answerSheetReferences: !!exam?.answerSheetReferences?.answerSheet4, buildingConsistency: !b || exam?.planningConditions?.guestRooms === b.rooms?.guestRooms, existingFloors: (exam?.drawingRequirements?.targetFloors || []).every((f) => validFloors.includes(String(f))), systemConsistency: allQ.every((q) => (q.relatedSystems || []).length === 0 || q.relatedSystems.every((id) => JSON.stringify(root(sources.equipment, 'equipment') || {}).includes(id))), nonEmptyPrompts: allQ.every((q) => q.prompt && q.title), noModelAnswer: !JSON.stringify(exam || {}).includes('模範解答:') && !Object.prototype.hasOwnProperty.call(exam || {}, 'modelAnswers') };
+function validateExam(exam, sources = {}) { const errors = []; const warnings = []; const b = root(sources.building, 'building'); const selection = exam?.selection || exam?.electiveSections || {}; const common = exam?.common || []; const commonQuestions = commonList(common); const allQ = [...Object.values(selection).flat(), ...commonQuestions]; const validFloors = floorIds(sources.drawings); const checks = { cover: !!exam?.cover, instructions: (exam?.instructions || []).length > 0, designTask: !!exam?.designTask?.buildingUse, planningConditions: !!exam?.planningConditions?.totalFloorArea, selectionCounts: ['hvac', 'plumbing', 'electrical'].every((k) => selection?.[k]?.length === 2), commonCount: commonQuestions.length === 3, answerSheet4Exists: exam?.answerSheetReferences?.answerSheet4 === 'common' || !!exam?.answerSheetReferences?.common, q03Hvac: commonQuestions.find((q) => q.questionId === 'Q03')?.type === 'hvac-detail', q04Plumbing: commonQuestions.find((q) => q.questionId === 'Q04')?.type === 'plumbing-detail', q05Electrical: commonQuestions.find((q) => q.questionId === 'Q05')?.type === 'electrical-equipment', questionNumbering: selection.hvac?.map((q) => q.questionId).join(',') === 'A01,A02' && selection.plumbing?.map((q) => q.questionId).join(',') === 'B01,B02' && selection.electrical?.map((q) => q.questionId).join(',') === 'C01,C02' && commonQuestions.map((q) => q.questionId).join(',') === 'Q03,Q04,Q05', buildingUseConsistency: commonQuestions.every((q) => q.autoSelection?.buildingUse === exam?.planningConditions?.use), equipmentModeConsistency: commonQuestions.every((q) => (q.autoSelection?.equipmentCondition || []).length > 0), difficultyConfigured: commonQuestions.every((q) => ['basic','standard','hard'].includes(q.difficulty)), actualExamStructure: true, calculationConditions: !!exam?.calculationConditions && Object.keys(exam.calculationConditions).length > 0, drawingConsistency: (exam?.drawingRequirements?.blankPlanReferences || []).every((id) => (sources.drawings?.blankPlans || []).some((d) => d.drawingId === id)), answerSheetReferences: !!exam?.answerSheetReferences?.answerSheet4, buildingConsistency: !b || exam?.planningConditions?.guestRooms === b.rooms?.guestRooms, existingFloors: (exam?.drawingRequirements?.targetFloors || []).every((f) => validFloors.includes(String(f))), systemConsistency: allQ.every((q) => (q.relatedSystems || []).length === 0 || q.relatedSystems.every((id) => JSON.stringify(root(sources.equipment, 'equipment') || {}).includes(id))), nonEmptyPrompts: allQ.every((q) => q.prompt && q.title), noModelAnswer: !JSON.stringify(exam || {}).includes('模範解答:') && !Object.prototype.hasOwnProperty.call(exam || {}, 'modelAnswers') };
   const dup = checkQuestionDuplication(allQ); checks.noDuplication = !dup.hasDuplication; if (dup.hasDuplication) warnings.push(...dup.warnings); Object.entries(checks).forEach(([k, ok]) => { if (!ok) errors.push(`${k}の検査に失敗しました。`); }); return { isValid: errors.length === 0, errors, warnings, checks }; }
 
 if (typeof module !== 'undefined') module.exports = { generateExam, createQuestionFingerprint, checkQuestionDuplication, validateExam };

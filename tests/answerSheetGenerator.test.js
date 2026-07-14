@@ -56,7 +56,7 @@ test('記述、計算、選択、図示に応じた欄が生成される', () =>
 
 test('questionIdとanswerSheetIdの対応がありIDが重複しない', () => {
   const { exam, answerSheets } = fixture();
-  const expected = [...Object.values(exam.selection).flat(), ...exam.common].map((q) => q.questionId);
+  const expected = [...Object.values(exam.selection).flat(), ...Object.values(exam.common)].map((q) => q.questionId);
   assert.deepEqual(answerSheets.questionAnswerMap.map((m) => m.questionId).sort(), expected.sort());
   const json = JSON.stringify(answerSheets);
   const ids = [...json.matchAll(/"(?:id|sheetId)":"([^"]+)"/g)].map((m) => m[1]);

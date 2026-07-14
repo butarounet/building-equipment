@@ -25,15 +25,13 @@ test('generateExam() が試験データを生成する', () => {
   assert.ok(exam.projectTitle);
 });
 
-test('必須問題11問と各選択設備2問、共通3問を生成する', () => {
+test('各選択設備2問、共通3問を生成する', () => {
   const { exam } = fixture();
-  assert.equal(exam.mandatoryQuestions.length, 11);
   assert.equal(exam.selection.hvac.length, 2);
   assert.equal(exam.selection.plumbing.length, 2);
   assert.equal(exam.selection.electrical.length, 2);
-  assert.equal(exam.common.length, 3);
-  assert.ok(exam.mandatoryQuestions.filter((q) => q.answerType === 'description').length >= 6);
-  assert.ok(exam.mandatoryQuestions.filter((q) => q.answerType === 'calculation').length >= 2);
+  assert.equal(Object.values(exam.common).length, 3);
+  assert.equal(Object.prototype.hasOwnProperty.call(exam, 'mandatoryQuestions'), false);
 });
 
 test('表紙、注意事項、設計課題、計画条件、計算条件、製図要求、答案参照が存在する', () => {
@@ -54,10 +52,10 @@ test('模範解答を含まない', () => {
 
 test('重複検査が動作する', () => {
   const { exam } = fixture();
-  const fp = createQuestionFingerprint(exam.mandatoryQuestions[0]);
-  assert.equal(fp.id, 'M01');
+  const fp = createQuestionFingerprint(exam.selection.hvac[0]);
+  assert.equal(fp.id, 'A01');
   assert.ok(fp.keywords.length > 0);
-  const duplication = checkQuestionDuplication([exam.mandatoryQuestions[0], { ...exam.mandatoryQuestions[0], questionId: 'X01' }]);
+  const duplication = checkQuestionDuplication([exam.selection.hvac[0], { ...exam.selection.hvac[0], questionId: 'X01' }]);
   assert.equal(duplication.hasDuplication, true);
 });
 

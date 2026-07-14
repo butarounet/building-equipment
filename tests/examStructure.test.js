@@ -25,7 +25,8 @@ test('本試験構成: 選択2問×3分野と共通Q03-Q05を生成する', () =
   assert.deepEqual(exam.selection.hvac.map((q) => q.questionId), ['A01', 'A02']);
   assert.deepEqual(exam.selection.plumbing.map((q) => q.questionId), ['B01', 'B02']);
   assert.deepEqual(exam.selection.electrical.map((q) => q.questionId), ['C01', 'C02']);
-  assert.deepEqual(exam.common.map((q) => [q.questionId, q.type]), [['Q03', 'hvac-room-detail'], ['Q04', 'plumbing-detail'], ['Q05', 'electrical-design']]);
+  assert.deepEqual(Object.values(exam.common).map((q) => [q.questionId, q.category, q.type, q.template]), [['Q03', '共通問題（空調詳細図）', 'hvac-detail', 'auto'], ['Q04', '共通問題（衛生詳細図）', 'plumbing-detail', 'auto'], ['Q05', '共通問題（電気設備図）', 'electrical-equipment', 'auto']]);
+  assert.ok(Object.values(exam.common).every((q) => q.autoSelection?.selectedCandidateId));
   assert.equal(validateExam(exam, input).isValid, true);
 });
 
@@ -49,4 +50,16 @@ test('JSON Schema、Exam Package、Quality Checkerが本試験構成を保持す
   assert.equal(report.checklist.find((c) => c.label === 'AnswerSheet4')?.ok, true);
   assert.equal(report.checklist.find((c) => c.label === '共通問題3問')?.ok, true);
   assert.equal(report.isValid, true, report.errors.join('\n'));
+});
+
+test('建物用途・室用途変更時に共通問題の自動生成内容が変化する', () => {
+  const input = fixture();
+  const officeBuilding = structuredClone(input.building);
+  officeBuilding.building.use = '事務所';
+  officeBuilding.building.rooms = { meetingRooms: 8, office: { area: { value: 4200, unit: 'm2' } } };
+  const officeExam = generateExam({ plan: { hotelType: '業務施設' }, building: officeBuilding, equipment: input.equipment, materials: input.materials, drawings: input.drawings });
+  const hotelCommon = Object.values(input.exam.common).map((q) => `${q.autoSelection.selectedCandidateId}:${q.prompt}`).join('|');
+  const officeCommon = Object.values(officeExam.common).map((q) => `${q.autoSelection.selectedCandidateId}:${q.prompt}`).join('|');
+  assert.notEqual(officeCommon, hotelCommon);
+  assert.equal(validateExam(officeExam, { ...input, building: officeBuilding }).checks.buildingUseConsistency, true);
 });

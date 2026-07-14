@@ -66,6 +66,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const answerSheetMessage = document.querySelector('#answer-sheet-message');
 
   const escapeHtml = (value) => String(value ?? '').replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
+  const commonQuestions = (common) => Array.isArray(common) ? common : Object.values(common || {});
   const renderQuestion = (q) => `<li><strong>${escapeHtml(q.questionId)} ${escapeHtml(q.title)}</strong><p>${escapeHtml(q.prompt)}</p><p class="exam-meta">解答形式: ${escapeHtml(q.answerType)} / 要求点: ${escapeHtml(q.requiredPoints)}</p></li>`;
   const renderExamBooklet = (exam) => {
     if (!exam) return '<p class="generation-result__empty">試験問題が未生成です。</p>';
@@ -76,7 +77,7 @@ document.addEventListener('DOMContentLoaded', () => {
       <article class="exam-page"><h3>選択問題A 空調選択</h3><ol>${(exam.selection?.hvac || exam.electiveSections?.hvac || []).map(renderQuestion).join('')}</ol></article>
       <article class="exam-page"><h3>選択問題B 衛生選択</h3><ol>${(exam.selection?.plumbing || exam.electiveSections?.plumbing || []).map(renderQuestion).join('')}</ol></article>
       <article class="exam-page"><h3>選択問題C 電気選択</h3><ol>${(exam.selection?.electrical || exam.electiveSections?.electrical || []).map(renderQuestion).join('')}</ol></article>
-      <article class="exam-page"><h3>共通問題 AnswerSheet4</h3><ol>${(exam.common || []).map(renderQuestion).join('')}</ol></article>`;
+      <article class="exam-page"><h3>共通問題 AnswerSheet4</h3><ol>${commonQuestions(exam.common).map(renderQuestion).join('')}</ol></article>`;
   };
 
   const ensureAnswerSheets = () => {
