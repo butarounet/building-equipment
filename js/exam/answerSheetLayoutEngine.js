@@ -1,0 +1,3 @@
+function buildAnswerSheetLayout(input = {}) { return { templateReferences: ['資料S3-5', '資料S4-5'], textareaOnly: false, frame: '本試験答案枠', regions: [ '受験番号欄', '氏名欄', '問題別答案枠', '作図欄', '表組欄', '採点欄' ], answerSheets: input.answerSheets || input }; }
+function checkAnswerSheetLayout(layout = {}) { const text = JSON.stringify(layout); const hasRegions = ['受験番号欄','氏名欄','問題別答案枠','作図欄','表組欄','採点欄'].every((x) => text.includes(x)); const textareaOnly = layout.textareaOnly === true || (/textarea/i.test(text) && !hasRegions); return { passed: hasRegions && !textareaOnly, hasRegions, textareaOnly, warnings: textareaOnly ? ['textareaのみの簡易表示は禁止です。'] : [] }; }
+module.exports = { buildAnswerSheetLayout, checkAnswerSheetLayout };
