@@ -32,7 +32,8 @@ test('ExamPipeline generates one synchronized ExamState in dependency order', as
   assert.equal(result.building.building.name, 'B');
   assert.equal(result.answerSheets.answerSheet4.questions.length, 3);
   assert.equal(result.printPackage.printable, true);
-  assert.deepEqual(progress, ['Building...', 'Equipment...', 'Materials...', 'Questions...', 'Drawings...', 'Blank...', 'Answer...', 'Checking...', 'Complete']);
+  assert.deepEqual(progress, ['Building...', 'Equipment...', 'Material...', 'Question...', 'Drawing...', 'Blank Drawing...', 'Equipment Drawing...', 'AnswerSheet...', 'ModelAnswer...', 'Consistency...', 'Print...', 'Preview...', 'Complete']);
+  assert.equal(result.previewPackage.ready, true);
 });
 
 test('DownloadManager blocks PDF when quality check fails but keeps JSON/SVG available', async () => {
