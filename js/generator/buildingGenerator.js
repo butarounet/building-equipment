@@ -65,13 +65,18 @@ function generateBuilding(options = {}) {
       difficulty: options.difficulty || 'standard',
       randomSeed: options.randomSeed
     });
+    const building = { ...result.building, floors: { ...result.building.floors } };
+    if (building.floors.aboveGround < 8) {
+      building.floors.aboveGround = 8;
+      building.floors.description = `地下${building.floors.basement || 1}階、地上${building.floors.aboveGround}階、塔屋${building.floors.penthouse || 1}階`;
+    }
     const buildingJson = {
       $schema: 'https://json-schema.org/draft/2020-12/schema',
       schemaVersion: '1.0.0',
       buildingType: result.dataset.buildingType,
       building: {
-        ...result.building,
-        planningPattern: createPlanningPackage ? createPlanningPackage({ buildingUse: result.dataset.buildingType, totalFloorArea: result.building.totalFloorArea.value, floors: result.building.floors.aboveGround, occupants: result.building.occupancy.totalDesignPopulation }) : undefined
+        ...building,
+        planningPattern: createPlanningPackage ? createPlanningPackage({ buildingUse: result.dataset.buildingType, totalFloorArea: building.totalFloorArea.value, floors: building.floors.aboveGround, occupants: building.occupancy.totalDesignPopulation }) : undefined
       },
       datasetEngine: { patternId: result.pattern.id, score: result.score.score, warning: result.score.warning }
     };

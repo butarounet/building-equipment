@@ -77,6 +77,13 @@ test('generateBuilding does not produce undefined zoning in 1000 consecutive gen
   }
 });
 
+test('generateBuilding dataset path remains valid across repeated default generations', () => {
+  for (let i = 0; i < 200; i += 1) {
+    const generated = generateBuilding();
+    assert.ok(validateBuilding(generated).isValid);
+  }
+});
+
 test('generateBuilding output can generate valid equipment', () => {
   const building = generateBuilding({ random: () => 1 });
   const equipment = generateEquipment(building);
