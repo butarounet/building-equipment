@@ -16,6 +16,11 @@ document.addEventListener('DOMContentLoaded', () => {
   let generatedAnswerSheetSet = null;
   let currentAnswerSheetOutput = null;
   let currentSvg = null;
+  const pipelineState = window.ExamState ? new window.ExamState() : null;
+  const generationPipeline = window.ExamPipeline && pipelineState ? new window.ExamPipeline({
+    state: pipelineState,
+    onProgress: ({ step }) => { if (resultArea) resultArea.innerHTML = `<p class="generation-result__empty">${escapeHtml(step)}</p>`; }
+  }) : null;
   const svgSampleButton = document.querySelector('#svg-sample-button');
   const svgSaveButton = document.querySelector('#svg-save-button');
   const svgPreviewCanvas = document.querySelector('#svg-preview-canvas');
@@ -250,20 +255,40 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  const applyPipelineSnapshot = (snapshot) => {
+    generatedBuilding = snapshot.building;
+    generatedEquipmentData = snapshot.equipment;
+    generatedMaterials = snapshot.materials;
+    generatedExam = snapshot.exam;
+    generatedAnswerSheetSet = snapshot.answerSheets;
+    generatedDrawings = { ...(snapshot.buildingDrawing || {}), ...(snapshot.equipmentDrawing || {}), ...(snapshot.blankDrawing || {}) };
+    renderGenerationResult(generatedBuilding, generatedEquipmentData);
+    if (examBooklet && generatedExam) examBooklet.innerHTML = renderExamBooklet(generatedExam);
+    if (examMessage) examMessage.textContent = 'Pipelineで試験問題プレビューを更新しました。';
+    if (answerSheetMessage) answerSheetMessage.textContent = 'Pipelineで答案用紙セットを更新しました。';
+    if (architecturalMessage) architecturalMessage.textContent = 'Pipelineで建築図データを更新しました。';
+    if (equipmentMessage) equipmentMessage.textContent = 'Pipelineで設備図データを更新しました。';
+    if (jsonPreviewCode) jsonPreviewCode.textContent = JSON.stringify(snapshot, null, 2);
+  };
+
   if (generateButton && resultArea) {
-    generateButton.addEventListener('click', () => {
-      generatedPlan = window.planHotelProject ? window.planHotelProject(getPlannerOptions()) : null;
-      generatedBuilding = generateBuilding({ plan: generatedPlan });
-      generatedEquipmentData = generateEquipment(generatedBuilding);
-      generatedMaterials = window.generateMaterials ? window.generateMaterials({ plan: generatedPlan, building: generatedBuilding, equipment: generatedEquipmentData }) : null;
-      generatedExam = null;
+    generateButton.addEventListener('click', async () => {
       try {
-        generatedMaterials = generatedMaterials || (window.generateMaterials ? window.generateMaterials({ plan: generatedPlan, building: generatedBuilding, equipment: generatedEquipmentData }) : null);
+        if (generationPipeline) {
+          const snapshot = await generationPipeline.generate({ planner: getPlannerOptions() });
+          applyPipelineSnapshot(snapshot);
+          return;
+        }
+        generatedPlan = window.planHotelProject ? window.planHotelProject(getPlannerOptions()) : null;
+        generatedBuilding = generateBuilding({ plan: generatedPlan });
+        generatedEquipmentData = generateEquipment(generatedBuilding);
+        generatedMaterials = window.generateMaterials ? window.generateMaterials({ plan: generatedPlan, building: generatedBuilding, equipment: generatedEquipmentData }) : null;
+        generatedExam = null;
         generatedDrawings = window.generateDrawings ? window.generateDrawings({ plan: generatedPlan, building: generatedBuilding, equipment: generatedEquipmentData, materials: generatedMaterials }) : null;
+        renderGenerationResult(generatedBuilding, generatedEquipmentData);
       } catch (error) {
-        generatedDrawings = null;
+        resultArea.innerHTML = `<p class="generation-result__empty">Pipeline生成に失敗しました。${escapeHtml(error.message || '')}</p>`;
       }
-      renderGenerationResult(generatedBuilding, generatedEquipmentData);
     });
   }
 
