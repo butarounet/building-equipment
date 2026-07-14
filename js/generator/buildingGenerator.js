@@ -7,6 +7,8 @@ const ZONES = [
   { name: '商業地域（指定容積率600%・高度利用地区）', maxBuildingCoverageRatio: 0.8, maxFloorAreaRatio: 6.0 }
 ];
 const STRUCTURES = ['鉄骨鉄筋コンクリート造、一部鉄骨造', '鉄骨造、一部鉄筋コンクリート造', '鉄筋コンクリート造、一部鉄骨造'];
+const { createPlanningPackage } = typeof require === 'function' ? require('../planner/planningRuleEngine') : (globalThis.planningRuleEngine || {});
+
 const HOTEL_TYPE_USES = {
   city: '宿泊施設（都市型シティホテル）',
   conference: '宿泊施設（国際会議対応ホテル）',
@@ -132,6 +134,7 @@ function generateBuilding(options = {}) {
         totalDesignPopulation: rooms * 2 + Math.round(rooms * 0.28) + Math.round(banquetArea / 2),
         unit: 'persons'
       },
+      planningPattern: createPlanningPackage ? createPlanningPackage({ buildingUse: 'hotel', totalFloorArea: totalFloorAreaValue, floors: aboveGround, occupants: rooms * 2 }) : undefined,
       planningSource: plan ? { hotelType: plan.hotelType, hotelTypeName: plan.hotelTypeName, examDifficulty: plan.examDifficulty, zoningPolicy: plan.zoningPolicy } : undefined,
       legal: {
         buildingCoverageRatio: Number((buildingAreaValue / siteAreaValue).toFixed(3)),
