@@ -1,6 +1,7 @@
 (function (root) {
   const gridEngine = root.gridLayoutEngine || (typeof require === 'function' ? require('./gridLayoutEngine') : {});
   const baseChecker = root.drawingQualityChecker || (typeof require === 'function' ? require('./drawingQualityChecker') : {});
+  const detailEngine = root.architecturalDetailEngine || (typeof require === 'function' ? require('./architecturalDetailEngine') : {});
 
   const CAD_STYLE = 'ExamCAD';
   const LAYERS = Object.freeze([
@@ -108,22 +109,29 @@
   function improveBuildingDrawing(floorPlan = {}, inputs = {}, options = {}) {
     const plan = { ...floorPlan, ...inputs.floorPlan };
     const refined = refineGrid({ ...plan, grid: inputs.grid });
-    const dw = generateDoorWindows({ ...plan, doors: inputs.doors || plan.doors, windows: inputs.windows || plan.windows });
+    const details = detailEngine.generateArchitecturalDetails ? detailEngine.generateArchitecturalDetails(plan) : {};
+    const dw = details.doors ? { doors: details.doors, windows: details.windows } : generateDoorWindows({ ...plan, doors: inputs.doors || plan.doors, windows: inputs.windows || plan.windows });
     const enhanced = {
       ...plan,
       gridLines: refined,
-      walls: generateWalls({ ...plan, walls: inputs.walls || plan.walls }),
+      walls: details.walls || generateWalls({ ...plan, walls: inputs.walls || plan.walls }),
       columns: generateColumns(refined, { ...plan, columns: inputs.columns || plan.columns }),
       doors: dw.doors,
       windows: dw.windows,
-      dimensions: generateDimensions(plan, refined),
-      annotations: generateAnnotations(plan),
+      dimensions: details.dimensions || generateDimensions(plan, refined),
+      labels: details.labels || [],
+      roomLabels: details.labels || [],
+      annotations: details.annotations || generateAnnotations(plan),
+      fireCompartments: details.fireCompartments || plan.fireCompartments || [],
+      drawingDecorations: details.decorations || [],
       drawingLayers: LAYERS.map((l) => ({ ...l })),
       cadStyle: CAD_STYLE,
       lineWidths: { grid: 0.13, wall: 0.18, dimension: 0.13, innerWall: 0.25, column: 0.35, outerWall: 0.5 },
+      architecturalDetailEngine: details.engine || 'Architectural Detail Engine',
+      architecturalDetailScore: details.score,
       qualityEngine: 'BuildingDrawingQualityEngine'
     };
-    return { ...checkQuality(enhanced, options.svg), drawingLayers: enhanced.drawingLayers, dimensions: enhanced.dimensions, annotations: enhanced.annotations, cadStyle: CAD_STYLE, enhancedFloorPlan: enhanced };
+    return { ...checkQuality(enhanced, options.svg), architecturalDetailScore: enhanced.architecturalDetailScore, drawingLayers: enhanced.drawingLayers, dimensions: enhanced.dimensions, annotations: enhanced.annotations, cadStyle: CAD_STYLE, enhancedFloorPlan: enhanced };
   }
 
   const api = { CAD_STYLE, LAYERS, refineGrid, generateWalls, generateColumns, generateDoorWindows, generateDimensions, generateAnnotations, checkQuality, improveBuildingDrawing };

@@ -55,7 +55,46 @@
 - 用途別テンプレートを保持するBuilding Pattern Library
 - 用途別設計ルールを適用するPlanning Rules Engine / PatternSelector / PatternValidator / PlanningQualityChecker
 - 建築設備士第二次試験相当の柱・梁・コア・シャフトを生成するStructural Grid Engine
+- Step10-5 Architectural Detail Engineで壁厚・建具・窓・防火区画・室名・寸法・通り芯・断面記号を自動注記
 - ブラウザで建築条件・設備条件を確認できるGenerator Preview画面
+
+
+## Step10-5 Architectural Detail Engine
+
+`js/layout/architecturalDetailEngine.js` は、Step10-4 Structural Grid Engineで生成したグリッド・柱・梁・コア・EV・階段・EPS/PS/DSを受け取り、建築設備士第二次試験の建築基本設計図として必要な詳細・注記を補完します。
+
+処理フローは次のとおりです。
+
+```text
+Step10-4 Structural Grid Engine
+  ↓
+Architectural Detail Engine
+  ↓
+Building Drawing Quality Engine
+  ↓
+Architectural Renderer
+```
+
+Architectural Detail Engineは、Step11 SVG Generator、Step12 AnswerSheet、共通問題切出し、設備図の共通入力として利用できます。
+
+### 生成内容
+
+- `WallGenerator`: 外壁250mm、内部壁120/150mm、耐火壁200mm、RC壁250mm、EPS壁150mm、PS壁120mm、DS壁150mmを用途別に生成
+- `DoorWindowGenerator`: 片開き、両開き、防火戸、自閉、FIX、連窓、掃出し、腰窓、建具番号、窓番号、開閉方向を生成
+- `RoomLabelGenerator`: 室名、室番号、面積、天井高さ、用途、仕上区分を各室中央へ配置
+- `DimensionGenerator`: 通り芯寸法、柱芯寸法、全体寸法、建物寸法、壁芯寸法、開口寸法に利用できる寸法JSONを生成
+- `FireCompartmentGenerator`: 防火区画、防火戸、特定防火設備、防煙・排煙区画に展開できる区画情報を生成
+- `AnnotationGenerator`: 北矢印、縮尺、凡例、図面名称、階名称、図面番号、通り芯番号を生成
+- `DrawingDecorationGenerator`: 断面記号、詳細番号、引出線、破線、一点鎖線、中心線など試験図面表現を生成
+
+```js
+const { generateArchitecturalDetails } = require('./js/layout/architecturalDetailEngine');
+
+const detail = generateArchitecturalDetails(floorPlan);
+// { walls, doors, windows, dimensions, labels, annotations, fireCompartments, score }
+```
+
+QualityCheckerは、壁厚、建具、窓、寸法、室名、図面記号、防火区画、注記、建築設備士試験品質を100点評価します。
 
 ## データモデル
 
