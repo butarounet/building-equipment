@@ -1,0 +1,4 @@
+const FIXED_PAGE_ORDER = ['表紙', '注意事項', '設計課題', '計画条件', '図面', '問題', '答案', '採点', '模範解答'];
+function buildPagination(input = {}) { return { fixed: true, pageOrder: FIXED_PAGE_ORDER.slice(), pages: FIXED_PAGE_ORDER.map((title, i) => ({ page: i + 1, title, breakBefore: i > 0, breakAfter: true, content: input[title] || input[String(title).toLowerCase()] || null })) }; }
+function checkPagination(pagination = {}) { const order = pagination.pageOrder || (pagination.pages || []).map((p) => p.title); const passed = JSON.stringify(order) === JSON.stringify(FIXED_PAGE_ORDER) && (pagination.pages || []).every((p, i) => p.page === i + 1 && p.breakAfter); return { passed, expected: FIXED_PAGE_ORDER, actual: order, pageCount: order.length }; }
+module.exports = { FIXED_PAGE_ORDER, buildPagination, checkPagination };
