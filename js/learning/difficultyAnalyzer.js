@@ -1,0 +1,3 @@
+const arr=(v)=>Array.isArray(v)?v:(v?[v]:[]);
+function analyzeDifficulty(exams=[]){let calculation=0,diagram=0,text=0,equipment=0; arr(exams).forEach(exam=>{const s=JSON.stringify(exam); calculation+=(s.match(/算定|計算|需要率|容量|負荷/g)||[]).length; diagram+=(s.match(/図|作成|配置|平面|断面|白図/g)||[]).length; text+=s.length; equipment+=(s.match(/AHU|VAV|FCU|給水|排水|照明|受変電|設備/g)||[]).length;}); const score=Math.min(100,Math.round(35+calculation*2+diagram+equipment+text/4000)); return {calculationVolume:calculation,drawingVolume:diagram,textVolume:text,equipmentVolume:equipment,level:score>=75?'hard':score>=55?'standard':'basic',score};}
+module.exports={analyzeDifficulty};

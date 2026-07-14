@@ -1,0 +1,319 @@
+{
+  "years": [
+    "令和2年",
+    "令和3年",
+    "令和4年",
+    "令和5年",
+    "令和6年",
+    "令和7年"
+  ],
+  "questionCount": 30,
+  "style": {
+    "endings": {
+      "述べよ": 30
+    },
+    "headings": [
+      "header",
+      "commonQuestions",
+      "disciplineQuestions",
+      "drawingRequirements",
+      "footer"
+    ],
+    "sequence": [
+      "令和2年-header",
+      "令和2年-commonQuestions",
+      "令和2年-disciplineQuestions",
+      "令和2年-drawingRequirements",
+      "令和2年-footer",
+      "令和3年-header",
+      "令和3年-commonQuestions",
+      "令和3年-disciplineQuestions",
+      "令和3年-drawingRequirements",
+      "令和3年-footer",
+      "令和4年-header",
+      "令和4年-commonQuestions",
+      "令和4年-disciplineQuestions",
+      "令和4年-drawingRequirements",
+      "令和4年-footer",
+      "令和5年-header",
+      "令和5年-commonQuestions",
+      "令和5年-disciplineQuestions",
+      "令和5年-drawingRequirements",
+      "令和5年-footer",
+      "令和6年-header",
+      "令和6年-commonQuestions",
+      "令和6年-disciplineQuestions",
+      "令和6年-drawingRequirements",
+      "令和6年-footer",
+      "令和7年-header",
+      "令和7年-commonQuestions",
+      "令和7年-disciplineQuestions",
+      "令和7年-drawingRequirements",
+      "令和7年-footer"
+    ]
+  },
+  "frequency": {
+    "answerType": {
+      "description": 24,
+      "diagram": 6
+    },
+    "section": {
+      "template": 30
+    },
+    "keywords": {
+      "header": 6,
+      "headerについて条件を整理し": 6,
+      "必要事項を述べよ": 30,
+      "commonQuestions": 6,
+      "commonQuestionsについて条件を整理し": 6,
+      "disciplineQuestions": 6,
+      "disciplineQuestionsについて条件を整理し": 6,
+      "drawingRequirements": 6,
+      "drawingRequirementsについて条件を整理し": 6,
+      "footer": 6,
+      "footerについて条件を整理し": 6
+    }
+  },
+  "patterns": [
+    {
+      "id": "令和2年-header",
+      "section": "template",
+      "answerType": "description",
+      "systems": [],
+      "rooms": [],
+      "template": "headerについて条件を整理し、必要事項を述べよ。"
+    },
+    {
+      "id": "令和2年-commonQuestions",
+      "section": "template",
+      "answerType": "description",
+      "systems": [],
+      "rooms": [],
+      "template": "commonQuestionsについて条件を整理し、必要事項を述べよ。"
+    },
+    {
+      "id": "令和2年-disciplineQuestions",
+      "section": "template",
+      "answerType": "description",
+      "systems": [],
+      "rooms": [],
+      "template": "disciplineQuestionsについて条件を整理し、必要事項を述べよ。"
+    },
+    {
+      "id": "令和2年-drawingRequirements",
+      "section": "template",
+      "answerType": "diagram",
+      "systems": [],
+      "rooms": [],
+      "template": "drawingRequirementsについて条件を整理し、必要事項を述べよ。"
+    },
+    {
+      "id": "令和2年-footer",
+      "section": "template",
+      "answerType": "description",
+      "systems": [],
+      "rooms": [],
+      "template": "footerについて条件を整理し、必要事項を述べよ。"
+    },
+    {
+      "id": "令和3年-header",
+      "section": "template",
+      "answerType": "description",
+      "systems": [],
+      "rooms": [],
+      "template": "headerについて条件を整理し、必要事項を述べよ。"
+    },
+    {
+      "id": "令和3年-commonQuestions",
+      "section": "template",
+      "answerType": "description",
+      "systems": [],
+      "rooms": [],
+      "template": "commonQuestionsについて条件を整理し、必要事項を述べよ。"
+    },
+    {
+      "id": "令和3年-disciplineQuestions",
+      "section": "template",
+      "answerType": "description",
+      "systems": [],
+      "rooms": [],
+      "template": "disciplineQuestionsについて条件を整理し、必要事項を述べよ。"
+    },
+    {
+      "id": "令和3年-drawingRequirements",
+      "section": "template",
+      "answerType": "diagram",
+      "systems": [],
+      "rooms": [],
+      "template": "drawingRequirementsについて条件を整理し、必要事項を述べよ。"
+    },
+    {
+      "id": "令和3年-footer",
+      "section": "template",
+      "answerType": "description",
+      "systems": [],
+      "rooms": [],
+      "template": "footerについて条件を整理し、必要事項を述べよ。"
+    },
+    {
+      "id": "令和4年-header",
+      "section": "template",
+      "answerType": "description",
+      "systems": [],
+      "rooms": [],
+      "template": "headerについて条件を整理し、必要事項を述べよ。"
+    },
+    {
+      "id": "令和4年-commonQuestions",
+      "section": "template",
+      "answerType": "description",
+      "systems": [],
+      "rooms": [],
+      "template": "commonQuestionsについて条件を整理し、必要事項を述べよ。"
+    },
+    {
+      "id": "令和4年-disciplineQuestions",
+      "section": "template",
+      "answerType": "description",
+      "systems": [],
+      "rooms": [],
+      "template": "disciplineQuestionsについて条件を整理し、必要事項を述べよ。"
+    },
+    {
+      "id": "令和4年-drawingRequirements",
+      "section": "template",
+      "answerType": "diagram",
+      "systems": [],
+      "rooms": [],
+      "template": "drawingRequirementsについて条件を整理し、必要事項を述べよ。"
+    },
+    {
+      "id": "令和4年-footer",
+      "section": "template",
+      "answerType": "description",
+      "systems": [],
+      "rooms": [],
+      "template": "footerについて条件を整理し、必要事項を述べよ。"
+    },
+    {
+      "id": "令和5年-header",
+      "section": "template",
+      "answerType": "description",
+      "systems": [],
+      "rooms": [],
+      "template": "headerについて条件を整理し、必要事項を述べよ。"
+    },
+    {
+      "id": "令和5年-commonQuestions",
+      "section": "template",
+      "answerType": "description",
+      "systems": [],
+      "rooms": [],
+      "template": "commonQuestionsについて条件を整理し、必要事項を述べよ。"
+    },
+    {
+      "id": "令和5年-disciplineQuestions",
+      "section": "template",
+      "answerType": "description",
+      "systems": [],
+      "rooms": [],
+      "template": "disciplineQuestionsについて条件を整理し、必要事項を述べよ。"
+    },
+    {
+      "id": "令和5年-drawingRequirements",
+      "section": "template",
+      "answerType": "diagram",
+      "systems": [],
+      "rooms": [],
+      "template": "drawingRequirementsについて条件を整理し、必要事項を述べよ。"
+    },
+    {
+      "id": "令和5年-footer",
+      "section": "template",
+      "answerType": "description",
+      "systems": [],
+      "rooms": [],
+      "template": "footerについて条件を整理し、必要事項を述べよ。"
+    },
+    {
+      "id": "令和6年-header",
+      "section": "template",
+      "answerType": "description",
+      "systems": [],
+      "rooms": [],
+      "template": "headerについて条件を整理し、必要事項を述べよ。"
+    },
+    {
+      "id": "令和6年-commonQuestions",
+      "section": "template",
+      "answerType": "description",
+      "systems": [],
+      "rooms": [],
+      "template": "commonQuestionsについて条件を整理し、必要事項を述べよ。"
+    },
+    {
+      "id": "令和6年-disciplineQuestions",
+      "section": "template",
+      "answerType": "description",
+      "systems": [],
+      "rooms": [],
+      "template": "disciplineQuestionsについて条件を整理し、必要事項を述べよ。"
+    },
+    {
+      "id": "令和6年-drawingRequirements",
+      "section": "template",
+      "answerType": "diagram",
+      "systems": [],
+      "rooms": [],
+      "template": "drawingRequirementsについて条件を整理し、必要事項を述べよ。"
+    },
+    {
+      "id": "令和6年-footer",
+      "section": "template",
+      "answerType": "description",
+      "systems": [],
+      "rooms": [],
+      "template": "footerについて条件を整理し、必要事項を述べよ。"
+    },
+    {
+      "id": "令和7年-header",
+      "section": "template",
+      "answerType": "description",
+      "systems": [],
+      "rooms": [],
+      "template": "headerについて条件を整理し、必要事項を述べよ。"
+    },
+    {
+      "id": "令和7年-commonQuestions",
+      "section": "template",
+      "answerType": "description",
+      "systems": [],
+      "rooms": [],
+      "template": "commonQuestionsについて条件を整理し、必要事項を述べよ。"
+    },
+    {
+      "id": "令和7年-disciplineQuestions",
+      "section": "template",
+      "answerType": "description",
+      "systems": [],
+      "rooms": [],
+      "template": "disciplineQuestionsについて条件を整理し、必要事項を述べよ。"
+    },
+    {
+      "id": "令和7年-drawingRequirements",
+      "section": "template",
+      "answerType": "diagram",
+      "systems": [],
+      "rooms": [],
+      "template": "drawingRequirementsについて条件を整理し、必要事項を述べよ。"
+    },
+    {
+      "id": "令和7年-footer",
+      "section": "template",
+      "answerType": "description",
+      "systems": [],
+      "rooms": [],
+      "template": "footerについて条件を整理し、必要事項を述べよ。"
+    }
+  ]
+}
