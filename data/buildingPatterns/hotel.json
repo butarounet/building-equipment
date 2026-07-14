@@ -1,0 +1,189 @@
+{
+  "buildingType": "hotel",
+  "version": "1.0.0",
+  "patterns": [
+    {
+      "id": "hotel-exam-1",
+      "name": "都市型ホテル標準プラン1",
+      "examUse": "宿泊施設（シティホテル）",
+      "site": {
+        "shape": "rectangular",
+        "area": 5200,
+        "access": "前面道路12m・サービス道路6m"
+      },
+      "floors": {
+        "basement": 1,
+        "aboveGround": 8,
+        "penthouse": 1,
+        "typicalGuestFloors": [
+          4,
+          5,
+          6,
+          7,
+          8
+        ]
+      },
+      "grid": {
+        "spanX": 8000,
+        "spanY": 7200,
+        "columnsX": 8,
+        "columnsY": 5
+      },
+      "rooms": {
+        "majorRooms": [
+          "客室",
+          "宴会場",
+          "レストラン",
+          "厨房"
+        ],
+        "guestRooms": 140,
+        "banquetHall": {
+          "count": 1,
+          "area": 700
+        },
+        "restaurant": {
+          "count": 1,
+          "area": 450
+        },
+        "kitchen": {
+          "area": 320
+        }
+      },
+      "equipment": {
+        "hvac": "FCU",
+        "plumbing": "受水槽+加圧給水",
+        "electrical": "屋内キュービクル",
+        "bems": false,
+        "bcp": false
+      },
+      "constraints": [
+        "二方向避難",
+        "防火区画",
+        "設備シャフト縦貫",
+        "搬入動線分離"
+      ]
+    },
+    {
+      "id": "hotel-exam-2",
+      "name": "都市型ホテル標準プラン2",
+      "examUse": "宿泊施設（シティホテル）",
+      "site": {
+        "shape": "corner",
+        "area": 6400,
+        "access": "角地・歩車分離"
+      },
+      "floors": {
+        "basement": 1,
+        "aboveGround": 11,
+        "penthouse": 1,
+        "typicalGuestFloors": [
+          4,
+          5,
+          6,
+          7,
+          8
+        ]
+      },
+      "grid": {
+        "spanX": 8400,
+        "spanY": 8000,
+        "columnsX": 9,
+        "columnsY": 6
+      },
+      "rooms": {
+        "majorRooms": [
+          "客室",
+          "宴会場",
+          "レストラン",
+          "厨房"
+        ],
+        "guestRooms": 285,
+        "banquetHall": {
+          "count": 1,
+          "area": 880
+        },
+        "restaurant": {
+          "count": 2,
+          "area": 580
+        },
+        "kitchen": {
+          "area": 400
+        }
+      },
+      "equipment": {
+        "hvac": "AHU",
+        "plumbing": "高置水槽併用",
+        "electrical": "特高受電",
+        "bems": true,
+        "bcp": false
+      },
+      "constraints": [
+        "二方向避難",
+        "防火区画",
+        "設備シャフト縦貫",
+        "搬入動線分離"
+      ]
+    },
+    {
+      "id": "hotel-exam-3",
+      "name": "都市型ホテル標準プラン3",
+      "examUse": "宿泊施設（シティホテル）",
+      "site": {
+        "shape": "flag",
+        "area": 7600,
+        "access": "駅前広場接続"
+      },
+      "floors": {
+        "basement": 2,
+        "aboveGround": 14,
+        "penthouse": 1,
+        "typicalGuestFloors": [
+          4,
+          5,
+          6,
+          7,
+          8
+        ]
+      },
+      "grid": {
+        "spanX": 9000,
+        "spanY": 8400,
+        "columnsX": 10,
+        "columnsY": 7
+      },
+      "rooms": {
+        "majorRooms": [
+          "客室",
+          "宴会場",
+          "レストラン",
+          "厨房"
+        ],
+        "guestRooms": 430,
+        "banquetHall": {
+          "count": 1,
+          "area": 1060
+        },
+        "restaurant": {
+          "count": 1,
+          "area": 710
+        },
+        "kitchen": {
+          "area": 480
+        }
+      },
+      "equipment": {
+        "hvac": "VAV",
+        "plumbing": "直結増圧+受水槽",
+        "electrical": "屋外キュービクル",
+        "bems": true,
+        "bcp": true
+      },
+      "constraints": [
+        "二方向避難",
+        "防火区画",
+        "設備シャフト縦貫",
+        "搬入動線分離"
+      ]
+    }
+  ]
+}

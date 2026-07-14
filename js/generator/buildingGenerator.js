@@ -9,6 +9,8 @@ const ZONES = [
 const STRUCTURES = ['鉄骨鉄筋コンクリート造、一部鉄骨造', '鉄骨造、一部鉄筋コンクリート造', '鉄筋コンクリート造、一部鉄骨造'];
 const { createPlanningPackage } = typeof require === 'function' ? require('../planner/planningRuleEngine') : (globalThis.planningRuleEngine || {});
 
+const { BuildingDatasetEngine } = typeof require === 'function' ? require('../layout/buildingDatasetEngine') : (globalThis.buildingDatasetEngine || {});
+
 const HOTEL_TYPE_USES = {
   city: '宿泊施設（都市型シティホテル）',
   conference: '宿泊施設（国際会議対応ホテル）',
@@ -57,6 +59,25 @@ function ratioInPolicy(policy, fallbackMin, fallbackMax, random) {
 }
 
 function generateBuilding(options = {}) {
+  if (!options.plan && options.random === undefined && !options.disableDatasetEngine && BuildingDatasetEngine) {
+    const result = new BuildingDatasetEngine().generate({
+      buildingType: options.buildingType || 'hotel',
+      difficulty: options.difficulty || 'standard',
+      randomSeed: options.randomSeed
+    });
+    const buildingJson = {
+      $schema: 'https://json-schema.org/draft/2020-12/schema',
+      schemaVersion: '1.0.0',
+      buildingType: result.dataset.buildingType,
+      building: {
+        ...result.building,
+        planningPattern: createPlanningPackage ? createPlanningPackage({ buildingUse: result.dataset.buildingType, totalFloorArea: result.building.totalFloorArea.value, floors: result.building.floors.aboveGround, occupants: result.building.occupancy.totalDesignPopulation }) : undefined
+      },
+      datasetEngine: { patternId: result.pattern.id, score: result.score.score, warning: result.score.warning }
+    };
+    if (buildingJson.buildingType === 'hotel') buildingJson.building.use = '宿泊施設（シティホテル）';
+    return buildingJson;
+  }
   const random =
     typeof options.random === 'function'
       ? options.random
