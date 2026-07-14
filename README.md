@@ -57,6 +57,7 @@
 - 建築設備士第二次試験相当の柱・梁・コア・シャフトを生成するStructural Grid Engine
 - Step10-5 Architectural Detail Engineで壁厚・建具・窓・防火区画・室名・寸法・通り芯・断面記号を自動注記
 - Step10-6 Building Crop Generatorで建築平面図から試験用白図・共通問題白図・部分詳細図を自動切り出し
+- Step10-7 Exam Drawing Template Engineで試験図面別テンプレート、図枠、縮尺、凡例、タイトル欄を本試験レベルへ配置
 - ブラウザで建築条件・設備条件を確認できるGenerator Preview画面
 
 
@@ -134,6 +135,46 @@ const cropPackage = generateBuildingCropViews({
 ```
 
 ホテル用途では、Q03は客室6室・廊下・EPS・PS・設備室を1/100、Q04は男子便所・厨房・浴室を1/50、Q05は宴会場・レストラン・会議室を1/100で切り出すテンプレートを標準搭載しています。
+
+
+## Step10-7 Exam Drawing Template Engine
+
+`js/generator/examDrawingTemplateEngine.js` は、Step10-6までで生成した建築図、白図、共通問題切出しViewを、建築設備士第二次試験で毎年ほぼ一定となるA3横の図面テンプレートへ配置します。用途別ではなく試験図面別にテンプレートを保持し、資料1〜資料4および共通問題Q03〜Q05の図枠、縮尺、図面番号、タイトル、凡例位置、スケールバーを統一します。
+
+処理フローは次のとおりです。
+
+```text
+Building Crop Generator
+  ↓
+Exam Drawing Template Engine
+  ↓
+SVG Generator
+  ↓
+PDF Generator
+```
+
+Exam Drawing Template Engineは、全ての建築図、共通問題白図、設備図、答案用紙で共通テンプレートを利用するための中間JSONを生成します。
+
+### Engine構成
+
+- `TemplateLibrary`: 資料1 配置図 S=1/500、資料2 1階平面図 S=1/200、資料3 基準階平面図 S=1/200、資料4 屋上伏図 S=1/200、共通問題Q03 S=1/100、Q04 S=1/50、Q05 S=1/100の試験図面別テンプレートを保持
+- `SheetLayoutEngine`: A3横、余白、タイトル位置、図面番号、縮尺、図枠、表示領域を生成
+- `ViewportLayoutEngine`: Crop Engineから受け取ったViewを縮尺固定で自動中央揃えし、余白を調整
+- `TitleBlockGenerator`: 図面名称、縮尺、図面番号、階名称、用途、建物名称を生成
+- `LegendLayoutEngine`: 建築記号、設備スペース、EPS、PS、DS、階段、EV、北矢印などの凡例を配置
+- `ScaleBarGenerator`: S=1/50、S=1/100、S=1/200、S=1/500に対応した縮尺バーを生成
+- `DrawingCompositionEngine`: 配置図、平面図、屋上伏図、部分図、凡例、タイトルの順で最終構成を作成
+- `TemplateQualityChecker`: 図枠一致、余白一致、縮尺一致、タイトル一致、図面番号一致、凡例一致、建築設備士試験品質を100点評価
+
+```js
+const { generateExamDrawingTemplates } = require('./js/generator/examDrawingTemplateEngine');
+
+const templatePackage = generateExamDrawingTemplates({
+  views: cropPackage.cropViews,
+  context: { buildingName: '中央ホテル', buildingUse: 'ホテル' }
+});
+// { templates: [{ drawingType: 'floor', sheet: 'A3', scale: '1/200', title, frame, viewport, legend, titleBlock }], quality }
+```
 
 ## データモデル
 
