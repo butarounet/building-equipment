@@ -58,6 +58,7 @@
 - Step10-5 Architectural Detail Engineで壁厚・建具・窓・防火区画・室名・寸法・通り芯・断面記号を自動注記
 - Step10-6 Building Crop Generatorで建築平面図から試験用白図・共通問題白図・部分詳細図を自動切り出し
 - Step10-7 Exam Drawing Template Engineで試験図面別テンプレート、図枠、縮尺、凡例、タイトル欄を本試験レベルへ配置
+- Step10-8 Architectural CAD Standard Engineで建築・設備レイヤ、JIS線種、線幅、記号、寸法、文字、通り芯、参照記号、印刷品質を共通CADルールとして標準化
 - ブラウザで建築条件・設備条件を確認できるGenerator Preview画面
 
 
@@ -174,6 +175,55 @@ const templatePackage = generateExamDrawingTemplates({
   context: { buildingName: '中央ホテル', buildingUse: 'ホテル' }
 });
 // { templates: [{ drawingType: 'floor', sheet: 'A3', scale: '1/200', title, frame, viewport, legend, titleBlock }], quality }
+```
+
+## Step10-8 Architectural CAD Standard Engine
+
+`js/generator/examDrawingTemplateEngine.js` は、Step10-8として建築設備士第二次試験のCAD表現を統一する `Architectural CAD Standard Engine` も提供します。図枠や縮尺を決めるExam Drawing Template Engineの後段で、SVG/PDFへ渡す前にレイヤ、線種、線幅、文字、寸法、記号、印刷設定を共通化します。
+
+処理フローは次のとおりです。
+
+```text
+Exam Drawing Template Engine
+  ↓
+Architectural CAD Standard Engine
+  ↓
+SVG Generator
+  ↓
+PDF Generator
+```
+
+Architectural CAD Standard Engineは、Step11設備図、Step12答案用紙、共通問題白図、模範解答図のすべてで同じCADルールを利用するための標準JSONを生成します。
+
+### Engine構成
+
+- `CadLayerEngine`: `A-WALL`、`A-COLUMN`、`A-BEAM`、`A-DOOR`、`A-WINDOW`、`A-STAIR`、`A-ELEVATOR`、`A-GRID`、`A-DIM`、`A-TEXT`、`A-HATCH`、`A-FIRE`、`A-SYMBOL`、`A-ROOM`、`A-EPS`、`A-PS`、`A-DS`、`A-MECHSPACE`、`A-DETAIL`、`M-HVAC`、`M-DUCT`、`M-PIPE`、`M-DRAIN`、`E-LIGHT`、`E-POWER`、`E-FIRE`、`E-CABLE`を生成
+- `LineStyleEngine`: 実線、破線、一点鎖線、二点鎖線、中心線、隠線、寸法線、引出線、境界線、防火区画線、避難経路線を管理
+- `LineWeightEngine`: 外壁0.50、柱0.45、耐火壁0.45、内部壁0.30、建具0.20、窓0.18、寸法0.13、文字0.13、家具0.10、設備0.18、中心線0.09、ハッチ0.09を標準値として保持
+- `ArchitecturalSymbolEngine`: 階段、EV、EPS、PS、DS、設備室、断面記号、詳細記号、北矢印、通り芯、柱芯、建具番号、窓番号、室番号、断面番号、詳細番号、縮尺記号、図面番号を生成
+- `DimensionStyleEngine`: 通り芯寸法、内法寸法、開口寸法、全体寸法、建物寸法、柱芯寸法、壁芯寸法、FL、GL、RFL、CHを生成
+- `TextStyleEngine`: 2.5、3.5、5.0、7.0、10.0mmの文字高さと、室名、寸法、タイトル、注記、凡例の用途別文字設定を生成
+- `GridBubbleEngine`: X1、X2、Y1、Y2形式の円形通り芯記号、直径、文字位置、余白を生成
+- `ReferenceMarkerEngine`: A-A、B-B断面、1〜3詳細、矢印、引出線、ページ参照、図面番号を生成
+- `PrintingQualityEngine`: A3、300dpi、PDF、SVG、印刷余白、線幅補正、文字補正、白黒最適化を生成
+- `CadQualityChecker`: JIS線種、線幅、文字高さ、縮尺、通り芯、寸法線、建具番号、室番号、印刷品質、SVG品質、建築設備士試験品質を100点評価
+
+```js
+const { generateArchitecturalCadStandard } = require('./js/generator/examDrawingTemplateEngine');
+
+const standardPackage = generateArchitecturalCadStandard();
+// {
+//   cadStandard: {
+//     layers: [],
+//     symbols: [],
+//     lineWeights: {},
+//     lineStyles: {},
+//     textStyles: {},
+//     dimensions: {},
+//     printing: {}
+//   },
+//   quality: { score: 100, isValid: true }
+// }
 ```
 
 ## データモデル
