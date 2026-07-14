@@ -74,6 +74,28 @@ test('A4/A3/ SVG答案用紙が生成される', () => {
   assert.match(renderAnswerSheetSet(answerSheets, { sheetType: 'answerSheet4', mode: 'svg' }), /Q03/);
 });
 
+
+
+test('AnswerSheet4にQ03/Q04/Q05専用QuestionBlankPlanを埋め込む', () => {
+  const { answerSheets } = fixture();
+  const plans = [answerSheets.answerSheet4.floorPlanArea, answerSheets.answerSheet4.detailArea, answerSheets.answerSheet4.scheduleLegendArea].map((area) => area.drawing.blankPlan);
+  assert.deepEqual(plans.map((p) => p.questionId), ['Q03', 'Q04', 'Q05']);
+  assert.ok(plans.every((p) => p.cropBox && p.metadata.targetOnly));
+  assert.ok(plans.every((p) => p.metadata.noEquipment));
+  assert.ok(plans[0].excludedEquipment.includes('ducts'));
+  assert.ok(plans[1].excludedEquipment.includes('drainage'));
+  assert.ok(plans[2].excludedEquipment.includes('wiring'));
+  assert.equal(plans[0].discipline, 'hvac');
+  assert.equal(plans[1].discipline, 'plumbing');
+  assert.equal(plans[2].discipline, 'electrical');
+  assert.ok(plans[0].includePolicy.includes('EPS'));
+  assert.ok(plans[1].includePolicy.includes('sanitaryFixtureOutlines'));
+  assert.ok(plans[2].includePolicy.includes('furniture'));
+  assert.ok(plans.every((p) => p.questionMetadata.recommendedScale));
+  assert.ok(plans.every((p) => p.metadata.dynamicCropEngine && p.metadata.dynamicScaleEngine));
+  assert.ok(plans.every((p) => p.sheetLayout.adaptive && p.sheetLayout.printQualityDpi >= 300));
+});
+
 test('白図背景を切り替えられ、模範解答を含まない', () => {
   const off = fixture(false).answerSheets;
   const on = fixture(true).answerSheets;

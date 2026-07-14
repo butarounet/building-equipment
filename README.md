@@ -286,7 +286,7 @@ UIでは「試験問題プレビュー」セクションの「試験問題を生
 
 Answer Sheet Generatorは、Exam Generator、Material Generator、Drawing Generatorの生成結果を受け取り、模範解答を含まない空欄中心の答案用紙セットを生成します。答案用紙セットは`answerSheetSetId`、`examId`、A4縦/A3横の`sheetSizePolicy`、共通欄、AnswerSheet1（空調選択）、AnswerSheet2（衛生選択）、AnswerSheet3（電気選択）、AnswerSheet4（共通問題）、メタデータで構成します。
 
-AnswerSheet1は空調選択A01〜A02、AnswerSheet2は衛生選択B01〜B02、AnswerSheet3は電気選択C01〜C02、AnswerSheet4は共通問題Q03〜Q05の答案欄を持ちます。平面図欄はDrawing Generatorの白図参照を保持し、設備の模範解答は重ねません。
+AnswerSheet1は空調選択A01〜A02、AnswerSheet2は衛生選択B01〜B02、AnswerSheet3は電気選択C01〜C02、AnswerSheet4は共通問題Q03〜Q05の答案欄を持ちます。AnswerSheet4は、QuestionBuilderが保持する`drawingType`、`roomType`、`equipmentSystem`、`recommendedScale`、`drawingRule`等のQuestion Metadataを受け取り、QuestionBlankPlanGeneratorが`HVACBlankPlanRule`、`PlumbingBlankPlanRule`、`ElectricalBlankPlanRule`を選択します。Generator内部ではDynamic Crop Engineが対象範囲と余白を、Dynamic Scale Engineが1/50、1/75、1/100、1/150、1/200から適正縮尺を決定し、Q03（空調）、Q04（衛生）、Q05（電気）それぞれ専用のQuestionBlankPlanを生成して埋め込みます。Q03は柱・壁・建具・窓・EPS/PS/DS・階段・EV・室名・寸法・方位・設備室/設備シャフトのみ、Q04は器具輪郭・床排水位置・PS/DS/EPS・柱・壁・建具・寸法・室名・方位のみ、Q05は柱・壁・建具・窓・家具・室名・寸法・天井高さ・方位のみを表示し、受験者が描く設備要素、配管、配線、設備記号、模範解答は描画しません。AnswerSheet4 RendererはAdaptive Layout Engineにより各QuestionBlankPlanの図面量に応じてQ03〜Q05の作図領域を自動調整し、編集可能SVGとして出力します。
 
 Answer Sheet RendererはHTMLとSVGを出力します。記述・計算中心の用紙はA4縦HTML、製図用紙はA3横SVGを標準とし、白黒の本試験風レイアウト、図枠、ヘッダー、受験番号欄、氏名欄、採点者欄、罫線または方眼に対応します。プレビュー画面の「答案用紙プレビュー」から用紙種別を選び、生成、表示、SVG保存、印刷を実行できます。
 
