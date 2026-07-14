@@ -6,6 +6,7 @@
   const qualityEngine = root.buildingDrawingQualityEngine || (typeof require === 'function' ? require('../layout/buildingDrawingQualityEngine') : {});
   const examCadQualityEngine = root.examCadQualityEngine || (typeof require === 'function' ? require('../layout/examCadQualityEngine') : {});
   const buildingRealismEngine = root.buildingRealismEngine || (typeof require === 'function' ? require('../layout/buildingRealismEngine') : {});
+  const architecturalPatternEngine = root.architecturalPatternEngine || (typeof require === 'function' ? require('../layout/architecturalPatternEngine') : {});
   const defaults = { sheetSize: 'A3', orientation: 'landscape', showDimensions: true, showGrid: true, showRoomNames: true, showTitleBlock: true, buildingDrawingQuality: true };
   function infer(drawing = {}) {
     const id = String(drawing.drawingId || drawing.type || '').toLowerCase();
@@ -23,6 +24,7 @@
       if (kind === 'site') return site.renderSitePlan(source, opts);
       if (opts.examCadQuality !== false && examCadQualityEngine.enhance) source = examCadQualityEngine.enhance({ drawing: source, template: opts.template }).drawing;
       if (opts.buildingRealism !== false && buildingRealismEngine.enhance) source = buildingRealismEngine.enhance({ building: opts.building || {}, drawing: source }).drawing;
+      if (opts.architecturalPattern !== false && architecturalPatternEngine.enhance) source = architecturalPatternEngine.enhance({ building: opts.building || {}, drawing: source }).drawing;
       if (kind === 'blank') return blank.renderBlankPlan(source, opts);
       return floor.renderFloorPlan(source, opts);
     } catch (error) {
