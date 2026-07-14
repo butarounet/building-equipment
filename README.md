@@ -50,7 +50,8 @@
 - 建築企画・建築条件・設備条件から「資料1 計画条件」を生成するMaterial1 Generator
 - 資料1〜資料5を一括生成・管理するMaterial Generator
 - 生成条件を検査するQuality Checker
-- Floor Planner終了後に建築図品質・CAD品質・印刷品質を高めるBuilding Drawing Quality Engine
+- Floor Planner終了後に家具・建具・窓・コア・廊下まで生成するRoom Layout Engine
+- Room Layout Engine後に建築図品質・CAD品質・印刷品質を高めるBuilding Drawing Quality Engine
 - ブラウザで建築条件・設備条件を確認できるGenerator Preview画面
 
 ## データモデル
@@ -126,6 +127,47 @@ Quality Checkerとして、生成後の建築条件を検査します。
 戻り値は `{ isValid, errors, warnings, checks }` です。
 
 
+
+## Room Layout & Architectural Detail Engine（Step10-2）
+
+`js/layout/roomLayoutEngine.js` は、Floor Planner が生成した `FloorPlan JSON` を受け取り、Building Drawing Quality Engine の前段で建築計画として成立する平面詳細へ拡張する後処理エンジンです。以後の設備図、白図、答案用紙、共通問題は、この Engine が生成した部屋詳細・家具・建具・窓・コア・廊下・設備スペース情報を参照します。
+
+全体フローは以下です。
+
+```text
+Building Generator
+↓
+Floor Planner
+↓
+Room Layout Engine
+↓
+Architectural Detail Engine
+↓
+Building Drawing Quality Engine
+↓
+Architectural Drawing Renderer
+```
+
+入力は `FloorPlan JSON`、`Room JSON`、`Grid JSON`、`Core JSON`、`EquipmentSpace JSON`、`BuildingUse` を想定します。Engine は次のサブエンジン相当の処理を持ちます。
+
+- `RoomModuleEngine`: ホテル、病院、学校、事務所の用途別標準モジュールを生成する。
+- `FurnitureLayoutEngine`: ベッド、机、椅子、収納、厨房機器、トイレブース、洗面台等を、動線・避難・保守・配管を考慮して配置する。
+- `DoorPlacementEngine`: 片開き、親子扉、防火戸、PS/EPS扉、機械室扉、EV・階段室扉の位置と開閉方向を決める。
+- `WindowPlacementEngine`: 外壁窓、腰窓、FIX、厨房換気窓等を採光・眺望・避難を考慮して生成する。
+- `CoreDetailEngine`: EV、非常EV、階段、EPS、PS、DS、配管・ダクト・電気シャフト、管理室、防災センターを詳細化する。
+- `CorridorOptimizationEngine`: 主動線、避難経路、搬入動線、サービス動線、宿泊動線、スタッフ動線を整理し、有効幅員と歩行距離を評価する。
+- `AccessibilityEngine`: 有効幅員、車椅子回転、段差、非常口、避難方向を確認する。
+- `RoomQualityChecker`: 部屋形状、寸法、家具、動線、建具、窓、廊下幅、コア、EPS、PS、DS、保守性、法規、バリアフリー、避難、採光、建築設備士試験品質を100点評価する。
+
+```js
+const { generateRoomLayout } = require('./js/layout/roomLayoutEngine');
+
+const result = generateRoomLayout(floorPlan, { rooms, core, equipmentSpaces, buildingUse: 'hotel' });
+console.log(result.qualityScore, result.engine); // 例: 98, RoomLayoutEngine
+```
+
+出力は `{ roomLayout, furniture, doors, windows, coreDetail, corridors, accessibility, qualityScore, warnings, checks }` です。
+
 ## Building Drawing Quality Engine
 
 `js/layout/buildingDrawingQualityEngine.js` は、Floor Plannerが生成した `FloorPlan JSON` を、建築設備士第二次試験レベルの高品質な建築図へ整える後処理エンジンです。Building DrawingはFloor Planner終了後に必ずこのEngineを通過し、以降の設備図、白図、答案用紙、共通問題図は、この高品質建築図をベースとして生成します。
@@ -136,6 +178,10 @@ Quality Checkerとして、生成後の建築条件を検査します。
 Building JSON
 ↓
 Floor Planner
+↓
+Room Layout Engine
+↓
+Architectural Detail Engine
 ↓
 Building Drawing Quality Engine
 ↓
