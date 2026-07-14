@@ -56,6 +56,7 @@
 - 用途別設計ルールを適用するPlanning Rules Engine / PatternSelector / PatternValidator / PlanningQualityChecker
 - 建築設備士第二次試験相当の柱・梁・コア・シャフトを生成するStructural Grid Engine
 - Step10-5 Architectural Detail Engineで壁厚・建具・窓・防火区画・室名・寸法・通り芯・断面記号を自動注記
+- Step10-6 Building Crop Generatorで建築平面図から試験用白図・共通問題白図・部分詳細図を自動切り出し
 - ブラウザで建築条件・設備条件を確認できるGenerator Preview画面
 
 
@@ -95,6 +96,44 @@ const detail = generateArchitecturalDetails(floorPlan);
 ```
 
 QualityCheckerは、壁厚、建具、窓、寸法、室名、図面記号、防火区画、注記、建築設備士試験品質を100点評価します。
+
+## Step10-6 Building Crop Generator
+
+`js/generator/buildingCropGenerator.js` は、Step10-5までで生成した建築平面図から、問題ごとに必要な範囲だけを切り出して試験用白図、共通問題白図、部分詳細図を生成します。Question Narrative Generator、Question Requirement Analyzer、Drawing Instruction Analyzerと連携し、問題文に一致した図面範囲を自動選定します。
+
+処理フローは次のとおりです。
+
+```text
+Architectural Detail
+  ↓
+Building Crop Generator
+  ↓
+Answer Sheet Generator
+  ↓
+SVG Generator
+```
+
+Building Crop Generatorは、以下のEngineで構成されます。
+
+- `CropPlanner`: FloorPlan JSON、Question JSON、DrawingRequirementから`cropArea`、`viewBox`、`rotation`、`margin`を決定
+- `CropRuleLibrary`: ホテルQ03/Q04/Q05、病院、学校、事務所の用途別切り出しテンプレートを保持
+- `ViewSelector`: 建物全体から問題条件、室名、器具条件、PS/EPS位置に合う候補を選定
+- `ScaleOptimizer`: A3へ収まる縮尺として1/50、1/100、1/150、1/200を選択
+- `AnswerSheetCropPlanner`: Q03、Q04、Q05の各答案用紙枠へ自動配置
+- `CropQualityChecker`: 問題条件一致、縮尺一致、図面中心、余白、設備記号除去、建築情報保持、A3印刷適正、本試験レベルを100点評価
+
+```js
+const { generateBuildingCropViews } = require('./js/generator/buildingCropGenerator');
+
+const cropPackage = generateBuildingCropViews({
+  floorPlans,
+  questions: exam.common,
+  buildingType: 'hotel'
+});
+// { cropViews: [{ id: 'Q03', title: '7階客室階平面図', scale: '1/100', viewBox, svg }], quality }
+```
+
+ホテル用途では、Q03は客室6室・廊下・EPS・PS・設備室を1/100、Q04は男子便所・厨房・浴室を1/50、Q05は宴会場・レストラン・会議室を1/100で切り出すテンプレートを標準搭載しています。
 
 ## データモデル
 
