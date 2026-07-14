@@ -1,0 +1,3 @@
+const arr=(v)=>Array.isArray(v)?v:(v?[v]:[]);
+function analyzeConditionPatterns(exams=[]){const conditionFrequency={}; const numeric=[]; arr(exams).forEach(exam=>{const qs=Object.values(exam.selection||exam.electiveSections||{}).flat().concat(Object.values(exam.common||{}).flat()); qs.forEach(q=>arr(q.conditions).forEach(c=>{conditionFrequency[c]=(conditionFrequency[c]||0)+1;})); const s=JSON.stringify(exam); (s.match(/[0-9]+(?:\.[0-9]+)?\s*(?:℃|m2|m3|kW|VA|lx|分|人日)/g)||[]).forEach(n=>numeric.push(n));}); return {conditionFrequency,numericConditions:[...new Set(numeric)].slice(0,80),trend:Object.entries(conditionFrequency).sort((a,b)=>b[1]-a[1]).map(([condition,count])=>({condition,count}))};}
+module.exports={analyzeConditionPatterns};

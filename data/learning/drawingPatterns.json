@@ -1,0 +1,364 @@
+{
+  "types": [
+    "配置図",
+    "平面図",
+    "断面図",
+    "屋上伏図",
+    "白図",
+    "設備図",
+    "答案用紙"
+  ],
+  "frequency": {
+    "配置図": 0,
+    "平面図": 0,
+    "断面図": 0,
+    "屋上伏図": 0,
+    "白図": 6,
+    "設備図": 6,
+    "答案用紙": 6
+  },
+  "trend": [
+    {
+      "type": "白図",
+      "count": 6
+    },
+    {
+      "type": "設備図",
+      "count": 6
+    },
+    {
+      "type": "答案用紙",
+      "count": 6
+    },
+    {
+      "type": "配置図",
+      "count": 0
+    },
+    {
+      "type": "平面図",
+      "count": 0
+    },
+    {
+      "type": "断面図",
+      "count": 0
+    },
+    {
+      "type": "屋上伏図",
+      "count": 0
+    }
+  ],
+  "patterns": [
+    {
+      "year": 2020,
+      "key": "architecturalDrawing",
+      "value": {
+        "title": "建築図",
+        "drawingNumbers": [
+          "建築図1",
+          "建築図2",
+          "建築図3"
+        ],
+        "count": 3
+      }
+    },
+    {
+      "year": 2020,
+      "key": "blankDrawing",
+      "value": {
+        "title": "白図",
+        "drawingNumbers": [
+          "白図1",
+          "白図2"
+        ],
+        "count": 2
+      }
+    },
+    {
+      "year": 2020,
+      "key": "equipmentDrawing",
+      "value": {
+        "title": "設備図",
+        "drawingNumbers": [
+          "設備図1",
+          "設備図2",
+          "設備図3"
+        ],
+        "count": 3
+      }
+    },
+    {
+      "year": 2020,
+      "key": "answerSheet",
+      "value": {
+        "title": "令和2年 答案用紙",
+        "answerNumbers": [
+          "答案用紙1",
+          "答案用紙2",
+          "答案用紙3",
+          "答案用紙4"
+        ],
+        "pageCount": 4
+      }
+    },
+    {
+      "year": 2021,
+      "key": "architecturalDrawing",
+      "value": {
+        "title": "建築図",
+        "drawingNumbers": [
+          "建築図1",
+          "建築図2",
+          "建築図3"
+        ],
+        "count": 3
+      }
+    },
+    {
+      "year": 2021,
+      "key": "blankDrawing",
+      "value": {
+        "title": "白図",
+        "drawingNumbers": [
+          "白図1",
+          "白図2"
+        ],
+        "count": 2
+      }
+    },
+    {
+      "year": 2021,
+      "key": "equipmentDrawing",
+      "value": {
+        "title": "設備図",
+        "drawingNumbers": [
+          "設備図1",
+          "設備図2",
+          "設備図3"
+        ],
+        "count": 3
+      }
+    },
+    {
+      "year": 2021,
+      "key": "answerSheet",
+      "value": {
+        "title": "令和3年 答案用紙",
+        "answerNumbers": [
+          "答案用紙1",
+          "答案用紙2",
+          "答案用紙3",
+          "答案用紙4"
+        ],
+        "pageCount": 4
+      }
+    },
+    {
+      "year": 2022,
+      "key": "architecturalDrawing",
+      "value": {
+        "title": "建築図",
+        "drawingNumbers": [
+          "建築図1",
+          "建築図2",
+          "建築図3"
+        ],
+        "count": 3
+      }
+    },
+    {
+      "year": 2022,
+      "key": "blankDrawing",
+      "value": {
+        "title": "白図",
+        "drawingNumbers": [
+          "白図1",
+          "白図2"
+        ],
+        "count": 2
+      }
+    },
+    {
+      "year": 2022,
+      "key": "equipmentDrawing",
+      "value": {
+        "title": "設備図",
+        "drawingNumbers": [
+          "設備図1",
+          "設備図2",
+          "設備図3"
+        ],
+        "count": 3
+      }
+    },
+    {
+      "year": 2022,
+      "key": "answerSheet",
+      "value": {
+        "title": "令和4年 答案用紙",
+        "answerNumbers": [
+          "答案用紙1",
+          "答案用紙2",
+          "答案用紙3",
+          "答案用紙4"
+        ],
+        "pageCount": 4
+      }
+    },
+    {
+      "year": 2023,
+      "key": "architecturalDrawing",
+      "value": {
+        "title": "建築図",
+        "drawingNumbers": [
+          "建築図1",
+          "建築図2",
+          "建築図3"
+        ],
+        "count": 3
+      }
+    },
+    {
+      "year": 2023,
+      "key": "blankDrawing",
+      "value": {
+        "title": "白図",
+        "drawingNumbers": [
+          "白図1",
+          "白図2"
+        ],
+        "count": 2
+      }
+    },
+    {
+      "year": 2023,
+      "key": "equipmentDrawing",
+      "value": {
+        "title": "設備図",
+        "drawingNumbers": [
+          "設備図1",
+          "設備図2",
+          "設備図3"
+        ],
+        "count": 3
+      }
+    },
+    {
+      "year": 2023,
+      "key": "answerSheet",
+      "value": {
+        "title": "令和5年 答案用紙",
+        "answerNumbers": [
+          "答案用紙1",
+          "答案用紙2",
+          "答案用紙3",
+          "答案用紙4"
+        ],
+        "pageCount": 4
+      }
+    },
+    {
+      "year": 2024,
+      "key": "architecturalDrawing",
+      "value": {
+        "title": "建築図",
+        "drawingNumbers": [
+          "建築図1",
+          "建築図2",
+          "建築図3"
+        ],
+        "count": 3
+      }
+    },
+    {
+      "year": 2024,
+      "key": "blankDrawing",
+      "value": {
+        "title": "白図",
+        "drawingNumbers": [
+          "白図1",
+          "白図2"
+        ],
+        "count": 2
+      }
+    },
+    {
+      "year": 2024,
+      "key": "equipmentDrawing",
+      "value": {
+        "title": "設備図",
+        "drawingNumbers": [
+          "設備図1",
+          "設備図2",
+          "設備図3"
+        ],
+        "count": 3
+      }
+    },
+    {
+      "year": 2024,
+      "key": "answerSheet",
+      "value": {
+        "title": "令和6年 答案用紙",
+        "answerNumbers": [
+          "答案用紙1",
+          "答案用紙2",
+          "答案用紙3",
+          "答案用紙4"
+        ],
+        "pageCount": 4
+      }
+    },
+    {
+      "year": 2025,
+      "key": "architecturalDrawing",
+      "value": {
+        "title": "建築図",
+        "drawingNumbers": [
+          "建築図1",
+          "建築図2",
+          "建築図3"
+        ],
+        "count": 3
+      }
+    },
+    {
+      "year": 2025,
+      "key": "blankDrawing",
+      "value": {
+        "title": "白図",
+        "drawingNumbers": [
+          "白図1",
+          "白図2"
+        ],
+        "count": 2
+      }
+    },
+    {
+      "year": 2025,
+      "key": "equipmentDrawing",
+      "value": {
+        "title": "設備図",
+        "drawingNumbers": [
+          "設備図1",
+          "設備図2",
+          "設備図3"
+        ],
+        "count": 3
+      }
+    },
+    {
+      "year": 2025,
+      "key": "answerSheet",
+      "value": {
+        "title": "令和7年 答案用紙",
+        "answerNumbers": [
+          "答案用紙1",
+          "答案用紙2",
+          "答案用紙3",
+          "答案用紙4"
+        ],
+        "pageCount": 4
+      }
+    }
+  ]
+}
