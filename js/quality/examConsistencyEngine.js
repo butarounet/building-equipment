@@ -1,3 +1,4 @@
+(function (root) {
 const arr = (v) => Array.isArray(v) ? v : (v ? [v] : []);
 const commonQuestions = (common) => Array.isArray(common) ? common : Object.values(common || {});
 const text = (v) => typeof v === 'string' ? v : JSON.stringify(v || '');
@@ -40,5 +41,7 @@ class TemplateChecker { check(input, c) { const names = ['資料1','問題冊子
 class CrossReferenceChecker { check(input, c) { getCommon(input.exam).forEach((q) => { const id = q.canonicalQuestionId; const room = inferRoom(q); if (room) c.check('CrossReference', `${id}問題-図面-答案-模範-採点`, [input.drawings, input.answerSheets, input.modelAnswers, input.scoring].filter(Boolean).every((x) => includes(x, room) || includes(input.answerSheets, room)), `${id}の相互参照が${room}で一致しません。`); }); } }
 class ExamConsistencyEngine { constructor() { this.checkers = [new QuestionConsistencyChecker(), new DrawingConsistencyChecker(), new CommonQuestionChecker(), new BlankPlanChecker(), new AnswerSheetChecker(), new ModelAnswerChecker(), new ScoringChecker(), new ScaleChecker(), new TemplateChecker(), new CrossReferenceChecker()]; } check(input = {}) { const c = createCollector(); this.checkers.forEach((checker) => checker.check(input, c)); const s = Math.round(score(c.checks)); return { passed: c.errors.length === 0 && s >= 95, score: s, warnings: c.warnings, errors: c.errors, checks: c.checks }; } }
 function checkExamConsistency(input) { return new ExamConsistencyEngine().check(input); }
-if (typeof module !== 'undefined') module.exports = { ExamConsistencyEngine, checkExamConsistency, QuestionConsistencyChecker, DrawingConsistencyChecker, CommonQuestionChecker, BlankPlanChecker, AnswerSheetChecker, ModelAnswerChecker, ScoringChecker, ScaleChecker, TemplateChecker, CrossReferenceChecker, ALLOWED_HVAC };
-if (typeof window !== 'undefined') { window.ExamConsistencyEngine = ExamConsistencyEngine; window.checkExamConsistency = checkExamConsistency; }
+const api = { ExamConsistencyEngine, checkExamConsistency, QuestionConsistencyChecker, DrawingConsistencyChecker, CommonQuestionChecker, BlankPlanChecker, AnswerSheetChecker, ModelAnswerChecker, ScoringChecker, ScaleChecker, TemplateChecker, CrossReferenceChecker, ALLOWED_HVAC };
+if (typeof module !== 'undefined') module.exports = api;
+if (root) { root.ExamConsistencyEngine = ExamConsistencyEngine; root.checkExamConsistency = checkExamConsistency; }
+})(typeof window !== 'undefined' ? window : undefined);
