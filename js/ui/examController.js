@@ -1,0 +1,5 @@
+var ExamStateRef = (typeof require !== 'undefined' ? require('./examState') : { ExamState: window.ExamState }).ExamState;
+var ExamPipelineRef = (typeof require !== 'undefined' ? require('./examPipeline') : { ExamPipeline: window.ExamPipeline }).ExamPipeline;
+class ExamController { constructor({ state = new ExamStateRef(), pipeline = null, synchronizer = null, overlay = null, downloadManager = null } = {}) { this.state = state; this.pipeline = pipeline || new ExamPipelineRef({ state }); this.synchronizer = synchronizer; this.overlay = overlay; this.downloadManager = downloadManager; } start() { this.synchronizer?.start?.(); return this; } async generate(options) { this.overlay?.show?.('Building...'); try { const result = await this.pipeline.generate(options); if (!result.consistency?.passed) this.overlay?.update?.('品質チェック失敗'); else this.overlay?.update?.('Complete'); return result; } finally { this.overlay?.hide?.(); } } canPrint() { return this.state.canPrint(); } }
+if (typeof module !== 'undefined') module.exports = { ExamController };
+if (typeof window !== 'undefined') window.ExamController = ExamController;
