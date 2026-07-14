@@ -66,6 +66,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const answerSheetMessage = document.querySelector('#answer-sheet-message');
 
   const escapeHtml = (value) => String(value ?? '').replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
+  const commonQuestions = (common) => Array.isArray(common) ? common : Object.values(common || {});
   const renderQuestion = (q) => `<li><strong>${escapeHtml(q.questionId)} ${escapeHtml(q.title)}</strong><p>${escapeHtml(q.prompt)}</p><p class="exam-meta">解答形式: ${escapeHtml(q.answerType)} / 要求点: ${escapeHtml(q.requiredPoints)}</p></li>`;
   const renderExamBooklet = (exam) => {
     if (!exam) return '<p class="generation-result__empty">試験問題が未生成です。</p>';
@@ -73,10 +74,10 @@ document.addEventListener('DOMContentLoaded', () => {
     return `
       <article class="exam-page exam-cover"><h3>${escapeHtml(exam.cover.examName)}</h3><h2>${escapeHtml(exam.projectTitle)}</h2><p>${escapeHtml(exam.cover.bookletLabel)} / ${escapeHtml(exam.cover.learningLabel)}</p><p>試験時間 ${escapeHtml(exam.cover.duration)}</p><div class="exam-fields"><span>受験番号：</span><span>氏名：</span></div></article>
       <article class="exam-page"><h3>注意事項</h3><ol>${exam.instructions.map((item) => `<li>${escapeHtml(item)}</li>`).join('')}</ol><h3>設計課題</h3><p>${escapeHtml(exam.designTask.concept)}：${escapeHtml(exam.projectTitle)}</p><h3>計画条件</h3><dl class="result-list">${createDefinitionList([{ label: '用途', value: escapeHtml(pc.use) }, { label: '場所', value: escapeHtml(pc.location) }, { label: '延べ面積', value: formatArea(pc.totalFloorArea) }, { label: '階数', value: escapeHtml(pc.floors?.description) }, { label: '客室数', value: `${escapeHtml(pc.guestRooms)}室` }])}</dl></article>
-      <article class="exam-page"><h3>必須問題 建築設備基本計画</h3><ol>${exam.mandatoryQuestions.map(renderQuestion).join('')}</ol></article>
-      <article class="exam-page"><h3>選択問題A 空調・換気設備</h3><ol>${exam.electiveSections.hvac.map(renderQuestion).join('')}</ol></article>
-      <article class="exam-page"><h3>選択問題B 給排水衛生設備</h3><ol>${exam.electiveSections.plumbing.map(renderQuestion).join('')}</ol></article>
-      <article class="exam-page"><h3>選択問題C 電気設備</h3><ol>${exam.electiveSections.electrical.map(renderQuestion).join('')}</ol></article>`;
+      <article class="exam-page"><h3>選択問題A 空調選択</h3><ol>${(exam.selection?.hvac || exam.electiveSections?.hvac || []).map(renderQuestion).join('')}</ol></article>
+      <article class="exam-page"><h3>選択問題B 衛生選択</h3><ol>${(exam.selection?.plumbing || exam.electiveSections?.plumbing || []).map(renderQuestion).join('')}</ol></article>
+      <article class="exam-page"><h3>選択問題C 電気選択</h3><ol>${(exam.selection?.electrical || exam.electiveSections?.electrical || []).map(renderQuestion).join('')}</ol></article>
+      <article class="exam-page"><h3>共通問題 AnswerSheet4</h3><ol>${commonQuestions(exam.common).map(renderQuestion).join('')}</ol></article>`;
   };
 
   const ensureAnswerSheets = () => {
@@ -481,8 +482,8 @@ document.addEventListener('DOMContentLoaded', () => {
     answerSheetShowButton.addEventListener('click', () => {
       try {
         const set = generatedAnswerSheetSet || ensureAnswerSheets();
-        const sheetType = answerSheetSelect?.value || 'mandatoryPlanningSheet';
-        const mode = ['hvacSheet', 'plumbingSheet', 'electricalSheet'].includes(sheetType) ? 'svg' : 'html';
+        const sheetType = answerSheetSelect?.value || 'answerSheet1';
+        const mode = ['answerSheet4'].includes(sheetType) ? 'svg' : 'html';
         currentAnswerSheetOutput = window.answerSheetRenderer.renderAnswerSheetSet(set, { sheetType, mode, showGrid: true, showQuestionTitles: true, includeBlankPlanBackground: true });
         answerSheetCanvas.innerHTML = currentAnswerSheetOutput;
         answerSheetMessage.textContent = '答案用紙を表示しました。';

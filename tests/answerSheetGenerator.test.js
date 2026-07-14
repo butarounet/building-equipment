@@ -26,36 +26,37 @@ test('generateAnswerSheets() が答案用紙一式を返す', () => {
   assert.ok(answerSheets.examId);
   assert.equal(answerSheets.sheetSizePolicy.written, 'A4-portrait');
   assert.equal(answerSheets.sheetSizePolicy.drawing, 'A3-landscape');
-  for (const key of ['commonFields', 'mandatoryPlanningSheet', 'hvacSheet', 'plumbingSheet', 'electricalSheet', 'commonDescriptionSheet']) assert.ok(answerSheets[key]);
+  for (const key of ['commonFields', 'answerSheet1', 'answerSheet2', 'answerSheet3', 'answerSheet4']) assert.ok(answerSheets[key]);
 });
 
-test('必須問題11問すべてに答案欄がある', () => {
+test('共通問題3問すべてにAnswerSheet4答案欄がある', () => {
   const { answerSheets } = fixture();
-  assert.equal(answerSheets.mandatoryPlanningSheet.questions.length, 11);
-  assert.ok(answerSheets.mandatoryPlanningSheet.questions.every((q) => q.primaryAnswerSheetId));
+  assert.equal(answerSheets.answerSheet4.questions.length, 3);
+  assert.deepEqual(answerSheets.answerSheet4.questions.map((q) => q.questionId), ['Q03', 'Q04', 'Q05']);
+  assert.ok(answerSheets.answerSheet4.questions.every((q) => q.primaryAnswerSheetId));
 });
 
-test('空調、衛生、電気の各5問に答案欄がある', () => {
+test('空調、衛生、電気の各2問に答案欄がある', () => {
   const { answerSheets } = fixture();
-  assert.equal(answerSheets.hvacSheet.questions.length, 5);
-  assert.equal(answerSheets.plumbingSheet.questions.length, 5);
-  assert.equal(answerSheets.electricalSheet.questions.length, 5);
+  assert.equal(answerSheets.answerSheet1.questions.length, 2);
+  assert.equal(answerSheets.answerSheet2.questions.length, 2);
+  assert.equal(answerSheets.answerSheet3.questions.length, 2);
 });
 
 test('記述、計算、選択、図示に応じた欄が生成される', () => {
   const { answerSheets } = fixture();
-  const all = [...answerSheets.mandatoryPlanningSheet.questions, ...answerSheets.hvacSheet.questions];
+  const all = [...answerSheets.answerSheet1.questions, ...answerSheets.answerSheet2.questions, ...answerSheets.answerSheet3.questions, ...answerSheets.answerSheet4.questions];
   assert.ok(all.find((q) => q.answerType === 'description').areas.description.enabled);
   const calc = all.find((q) => q.answerType === 'calculation');
   assert.ok(calc.areas.calculation.enabled);
   assert.ok(calc.areas.unit.enabled);
   assert.ok(all.find((q) => q.answerType === 'diagram').areas.diagram.enabled);
-  assert.ok(answerSheets.mandatoryPlanningSheet.questions.find((q) => q.answerType === 'selection').areas.selection.enabled);
+  assert.ok(answerSheets.answerSheet4.questions.every((q) => q.answerType === 'diagram')); 
 });
 
 test('questionIdとanswerSheetIdの対応がありIDが重複しない', () => {
   const { exam, answerSheets } = fixture();
-  const expected = [...exam.mandatoryQuestions, ...Object.values(exam.electiveSections).flat()].map((q) => q.questionId);
+  const expected = [...Object.values(exam.selection).flat(), ...Object.values(exam.common)].map((q) => q.questionId);
   assert.deepEqual(answerSheets.questionAnswerMap.map((m) => m.questionId).sort(), expected.sort());
   const json = JSON.stringify(answerSheets);
   const ids = [...json.matchAll(/"(?:id|sheetId)":"([^"]+)"/g)].map((m) => m[1]);
@@ -64,13 +65,13 @@ test('questionIdとanswerSheetIdの対応がありIDが重複しない', () => {
 
 test('A4/A3/ SVG答案用紙が生成される', () => {
   const { answerSheets } = fixture();
-  const html = renderAnswerSheet(answerSheets.mandatoryPlanningSheet, { mode: 'html', showGrid: true });
+  const html = renderAnswerSheet(answerSheets.answerSheet1, { mode: 'html', showGrid: true });
   assert.match(html, /A4 portrait/);
   assert.match(html, /answer-sheet-page a4/);
-  const svg = renderAnswerSheet(answerSheets.hvacSheet, { mode: 'svg', showGrid: true });
+  const svg = renderAnswerSheet(answerSheets.answerSheet4, { mode: 'svg', showGrid: true });
   assert.match(svg, /^<svg/);
   assert.match(svg, /420mm/);
-  assert.match(renderAnswerSheetSet(answerSheets, { sheetType: 'electricalSheet', mode: 'svg' }), /受電点/);
+  assert.match(renderAnswerSheetSet(answerSheets, { sheetType: 'answerSheet4', mode: 'svg' }), /Q03/);
 });
 
 test('白図背景を切り替えられ、模範解答を含まない', () => {
