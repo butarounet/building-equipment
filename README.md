@@ -54,6 +54,7 @@
 - Room Layout Engine後に建築図品質・CAD品質・印刷品質を高めるBuilding Drawing Quality Engine
 - 用途別テンプレートを保持するBuilding Pattern Library
 - 用途別設計ルールを適用するPlanning Rules Engine / PatternSelector / PatternValidator / PlanningQualityChecker
+- 建築設備士第二次試験相当の柱・梁・コア・シャフトを生成するStructural Grid Engine
 - ブラウザで建築条件・設備条件を確認できるGenerator Preview画面
 
 ## データモデル
@@ -140,7 +141,7 @@ Building Generator
 ↓
 Building Pattern Library
 ↓
-Planning Rules Engine
+Structural Grid Engine
 ↓
 Floor Planner
 ↓
@@ -181,6 +182,54 @@ const planning = createPlanningPackage({
 
 `PlanningQualityChecker` は100点評価を返し、用途らしさ、動線、コア、ゾーニング、設備計画、保守性、避難、法規、将来更新、建築設備士試験品質の観点で後段の Floor Planner / Room Layout Engine / Building Drawing Quality Engine に警告を渡します。
 
+
+## Structural Grid & Core Planning Engine（Step10-4）
+
+`js/planner/structuralGridPlanner.js` は、Building Generator と Building Pattern Library の後段で用途別の構造グリッド・コア・縦動線・設備シャフトを生成する Engine です。Step9設備配置、Step11設備図生成、Step12答案生成で共通利用できる柱・梁・コア・シャフト情報を返します。
+
+全体フローは以下です。
+
+```text
+Building Generator
+↓
+Building Pattern Library
+↓
+Structural Grid Engine
+↓
+Floor Planner
+↓
+Room Layout
+↓
+Drawing Quality
+↓
+Architectural Renderer
+```
+
+Structural Grid Engine は設備配置 Engine と共通シャフト情報を共有します。ホテル、病院、学校、事務所、研究施設、物流施設の用途別標準スパンを保持し、柱芯、通り芯、柱断面、梁方向、耐力壁候補を生成します。
+
+```js
+const { planStructuralGrid } = require('./js/planner/structuralGridPlanner');
+
+const result = planStructuralGrid({
+  buildingUse: 'hotel',
+  footprint: { width: 60000, depth: 36000 }
+});
+
+console.log(result.score); // 例: 100
+```
+
+出力は以下の構成です。
+
+- `grid`: 用途別標準スパン、選択スパン、X/Y通り芯、スパン割り
+- `columns`: 柱位置、柱断面、柱芯グリッド
+- `beams`: 梁方向、梁スパン、梁成、成立判定
+- `core`: EV、階段、EPS、PS、DS、設備室、防災センター、管理室、受変電、機械室を含むコア計画
+- `shafts`: EPS、PS、DS、MDF、IDF、通信、電気、給排水、冷温水、換気、排煙、ガスの共通シャフト情報
+- `stairs`: 階段、避難階段、避難距離判定
+- `elevators`: 乗用EV、サービスEV、非常EV、バリアフリー判定
+- `quality`: 柱、梁、スパン、コア、EPS、PS、DS、EV、階段、設備更新、保守、建築設備士試験品質の100点評価
+
+`ShaftPlanner` が返す `step9Connection: true` のシャフトは、Step9設備配置 Engine と接続するための共通シャフトとして扱います。
 
 ## Room Layout & Architectural Detail Engine（Step10-2）
 
