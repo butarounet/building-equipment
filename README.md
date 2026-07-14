@@ -52,6 +52,8 @@
 - 生成条件を検査するQuality Checker
 - Floor Planner終了後に家具・建具・窓・コア・廊下まで生成するRoom Layout Engine
 - Room Layout Engine後に建築図品質・CAD品質・印刷品質を高めるBuilding Drawing Quality Engine
+- 用途別テンプレートを保持するBuilding Pattern Library
+- 用途別設計ルールを適用するPlanning Rules Engine / PatternSelector / PatternValidator / PlanningQualityChecker
 - ブラウザで建築条件・設備条件を確認できるGenerator Preview画面
 
 ## データモデル
@@ -126,6 +128,58 @@ Quality Checkerとして、生成後の建築条件を検査します。
 
 戻り値は `{ isValid, errors, warnings, checks }` です。
 
+
+## Building Pattern Library & Planning Rules Engine（Step10-3）
+
+Building Generator は、用途別テンプレートを `BuildingPatternLibrary` から取得し、選択された建築計画パターンを建築条件へ付与します。Floor Planner および Room Layout Engine は、`PlanningRuleEngine` の用途別ルールを参照して、建築設備士第二次試験で求められる用途らしさ・ゾーニング・動線・コア計画・設備計画を満たす平面生成に利用します。
+
+全体フローは以下です。
+
+```text
+Building Generator
+↓
+Building Pattern Library
+↓
+Planning Rules Engine
+↓
+Floor Planner
+↓
+Room Layout Engine
+↓
+Building Drawing Quality Engine
+```
+
+### BuildingPatternLibrary
+
+`js/planner/buildingPatternLibrary.js` は、用途ごとの標準構成を保持する拡張可能なテンプレートライブラリです。現在は、ホテル、病院、学校、事務所、研究施設、美術館、庁舎、物流施設、商業施設、複合施設の10用途を登録しています。用途を追加する場合は、`USES` に `label` と `patterns` を追加するだけで、PatternSelector と PlanningRuleEngine から参照できます。
+
+ホテルテンプレートは、ロビー、中央コア、客室モジュール、宴会場、厨房、レストラン、バックヤード、SPA、ランドリー、設備機械室、屋外機置場、サービス動線、宿泊者動線、搬入動線を保持します。病院は外来、病棟、中央診療部、手術部、検査部、放射線部、SPD、厨房、霊安室、設備機械室、清潔動線、汚染動線を保持します。学校と事務所も、それぞれ普通教室・特別教室・職員室・体育館、執務室・会議室・役員室・サーバ室・防災センター等の標準構成を保持します。
+
+```js
+const { getPattern, listBuildingUses } = require('./js/planner/buildingPatternLibrary');
+
+const uses = listBuildingUses();
+const hotelPattern = getPattern('hotel_city_large', 'hotel');
+```
+
+### PlanningRuleEngine / PatternSelector / PatternValidator / PlanningQualityChecker
+
+`js/planner/planningRuleEngine.js` は、用途別の計画ルールを返し、建物用途・延床面積・階数・利用人数から最適パターンを選択し、生成済み平面の妥当性と計画品質を評価します。ホテルでは、客室外周、コア中央、宴会場低層、厨房隣接、搬入口厨房近接、設備機械室サービス動線側、サービス動線と宿泊者動線の分離を評価します。病院、学校、事務所も用途別に、患者・職員・清潔・汚染動線、普通教室外周、管理部門玄関側、執務室外周、受付玄関前等のルールを持ちます。
+
+```js
+const { createPlanningPackage, validatePattern } = require('./js/planner/planningRuleEngine');
+
+const planning = createPlanningPackage({
+  buildingUse: 'hotel',
+  totalFloorArea: 24000,
+  floors: 10,
+  occupants: 600
+});
+
+// { patternId: 'hotel_city_large', planningRules: [], planningScore: 98, warnings: [] }
+```
+
+`PlanningQualityChecker` は100点評価を返し、用途らしさ、動線、コア、ゾーニング、設備計画、保守性、避難、法規、将来更新、建築設備士試験品質の観点で後段の Floor Planner / Room Layout Engine / Building Drawing Quality Engine に警告を渡します。
 
 
 ## Room Layout & Architectural Detail Engine（Step10-2）
