@@ -5,6 +5,7 @@
   const base = root.svgRenderer || (typeof require === 'function' ? require('./svgRenderer') : {});
   const qualityEngine = root.buildingDrawingQualityEngine || (typeof require === 'function' ? require('../layout/buildingDrawingQualityEngine') : {});
   const examCadQualityEngine = root.examCadQualityEngine || (typeof require === 'function' ? require('../layout/examCadQualityEngine') : {});
+  const buildingRealismEngine = root.buildingRealismEngine || (typeof require === 'function' ? require('../layout/buildingRealismEngine') : {});
   const defaults = { sheetSize: 'A3', orientation: 'landscape', showDimensions: true, showGrid: true, showRoomNames: true, showTitleBlock: true, buildingDrawingQuality: true };
   function infer(drawing = {}) {
     const id = String(drawing.drawingId || drawing.type || '').toLowerCase();
@@ -20,8 +21,9 @@
       const shouldImprove = opts.buildingDrawingQuality !== false && qualityEngine.improveBuildingDrawing;
       let source = shouldImprove ? qualityEngine.improveBuildingDrawing(drawing, {}, opts).enhancedFloorPlan : drawing;
       if (kind === 'site') return site.renderSitePlan(source, opts);
-      if (kind === 'blank') return blank.renderBlankPlan(source, opts);
       if (opts.examCadQuality !== false && examCadQualityEngine.enhance) source = examCadQualityEngine.enhance({ drawing: source, template: opts.template }).drawing;
+      if (opts.buildingRealism !== false && buildingRealismEngine.enhance) source = buildingRealismEngine.enhance({ building: opts.building || {}, drawing: source }).drawing;
+      if (kind === 'blank') return blank.renderBlankPlan(source, opts);
       return floor.renderFloorPlan(source, opts);
     } catch (error) {
       return base.createSvgDocument({ title: '建築図生成エラー', scale: 'S=1/200' }).replace('</svg>', `<text id="architectural-renderer-error" x="30" y="40" class="text-note">${String(error.message || error)}</text></svg>`);

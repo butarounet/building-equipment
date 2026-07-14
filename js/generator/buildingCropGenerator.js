@@ -1,4 +1,5 @@
 const { analyzeQuestionRequirement } = require('./questionBlankPlanGenerator');
+const buildingRealismEngine = require('../layout/buildingRealismEngine');
 
 function arr(v) { return Array.isArray(v) ? v : v ? [v] : []; }
 function text(v) { return String(v || ''); }
@@ -108,9 +109,10 @@ function generateBuildingCropViews({ floorPlans = [], questions = [], drawingReq
   const views = questions.map((q) => {
     const req = drawingRequirements[q.questionId] || drawingRequirements[String(q.questionId).toLowerCase()] || analyzeQuestionRequirement({ question: q, buildingType });
     const floor = plans.find((p) => String(p.floorId) === String(req.targetFloor || q?.autoSelection?.targetFloor)) || plans.find((p) => /客室/.test(req.roomType || '') && /客室/.test(p.floorName || '')) || plans[0];
-    const plan = CropPlanner.plan({ floorPlan: floor, question: q, drawingRequirement: req, buildingType });
-    const clipped = clip(floor, plan.viewBox);
-    const view = { id: q.questionId, title: CropRuleLibrary.get(buildingType, q.questionId).title || q.title, scale: plan.scale, cropArea: plan.cropArea, viewBox: plan.viewBox, rotation: plan.rotation, margin: plan.margin, ...clipped, metadata: { generator: 'BuildingCropGenerator', noEquipment: true, sourceFloorId: floor?.floorId, requiredRooms: plan.rule.requiredRooms } };
+    const realisticFloor = buildingRealismEngine.enhance({ building: { buildingType }, drawing: floor }).drawing;
+    const plan = CropPlanner.plan({ floorPlan: realisticFloor, question: q, drawingRequirement: req, buildingType });
+    const clipped = clip(realisticFloor, plan.viewBox);
+    const view = { id: q.questionId, title: CropRuleLibrary.get(buildingType, q.questionId).title || q.title, scale: plan.scale, cropArea: plan.cropArea, viewBox: plan.viewBox, rotation: plan.rotation, margin: plan.margin, ...clipped, metadata: { generator: 'BuildingCropGenerator', noEquipment: true, sourceFloorId: realisticFloor?.floorId, buildingRealismEngine: true, requiredRooms: plan.rule.requiredRooms } };
     return { ...view, svg: toSvg(view) };
   });
   const cropViews = AnswerSheetCropPlanner.place(views);
