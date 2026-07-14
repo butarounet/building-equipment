@@ -43,6 +43,7 @@
 - CSSとJavaScriptの分離
 - 用途別JSONデータによる模擬試験生成基盤
 - ホテル課題の建築企画を生成するBuilding Planner
+- Step9-5の設備スペースを利用して空調設備・ダクト・配管を自動配置するStep9-6 HVAC Placement Engine
 - ホテル用途の建築条件を自動生成するBuilding Generator
 - 建築条件からホテル用途の設備条件を自動生成するEquipment Generator
 - 建築企画・建築条件・設備条件から「資料1 計画条件」を生成するMaterial1 Generator
