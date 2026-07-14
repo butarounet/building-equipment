@@ -1,0 +1,1 @@
+{"nodes":[{"id":"scoring:cq03","type":"Scoring","name":"CQ03 採点基準","generator":"Scoring"}],"edges":[{"from":"model:answer:cq03","to":"scoring:cq03","type":"scores"},{"from":"question:cq03","to":"scoring:cq03","type":"references"}]}

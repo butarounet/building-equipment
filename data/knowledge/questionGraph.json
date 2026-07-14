@@ -1,0 +1,1 @@
+{"nodes":[{"id":"question:cq03","type":"Question","name":"CQ03 空調詳細図","generator":"QuestionGenerator"}],"edges":[{"from":"drawing:hvac:7f","to":"question:cq03","type":"draws"},{"from":"system:ahu-vav","to":"question:cq03","type":"requires"},{"from":"room:7:guestroom","to":"question:cq03","type":"references"}]}
